@@ -1,0 +1,115 @@
+body {
+	margin: 0;
+	width: 100%;
+}
+
+.sidebar {
+	width: 20%;
+	height: 100vh;
+	background-color: #9E9FA3;
+}
+
+.main {
+	width: 80%;
+	height: 100vh;
+	display: flex;
+	align-items: center;
+	padding-left: 20px;
+}
+
+.field {
+	height: 90%;
+	aspect-ratio: 1/1;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	background-color: black;
+	padding: 1% 0;
+	border: 2px solid black;
+	box-shadow: gray 0 0 15px 5px;
+}
+
+.field_square {
+	width: 12%;
+	background-color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.field_square:nth-child(Even) {
+	background-color: black;
+}
+.game_info {
+	height: 100vh;
+	display: flex;
+	width: auto;
+	flex: 1;
+	flex-direction: column;
+	align-content: center;
+	justify-content: center;
+}
+
+.info_text {
+	font-size: 30px;
+	text-align: center;
+}
+
+.red-piece {
+	width: 20px;
+	height: 20px;
+	padding: 12px;
+	background-color: red;
+	border: 1px solid white;
+	border-radius: 50px;
+}
+
+.black-piece {
+	width: 20px;
+	height: 20px;
+	padding: 12px;
+	background-color: black;
+	border: 1px solid white;
+	border-radius: 50px;
+}
+
+.void-piece {
+	width: 20px;
+	height: 20px;
+	padding: 12px;
+	border-radius: 50px;
+}
+
+.king.red-piece {
+	background-color: orange;
+}
+
+.king.black-piece {
+	background-color: purple;
+}
+
+.selected {
+	width: 16px;
+	height: 16px;
+	border: 3px solid green;
+}
+
+#game {
+	margin: 50px auto;
+	width: 300px;
+	height: 300px;
+	display: flex;
+	flex-wrap: wrap;
+	background-color: #eee;
+	border: 5px solid #333;
+}
+
+.end_turn_btn {
+	width: 100%;
+	text-align: center;
+	box-sizing: border-box;
+	padding: 10px;
+	border: 2px solid black;
+	border-radius: 10px;
+	margin-top: 10px;
+}

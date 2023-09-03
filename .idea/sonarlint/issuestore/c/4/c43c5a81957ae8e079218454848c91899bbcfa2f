@@ -1,0 +1,15 @@
+
+cgo:S100	"JRename function "_dist" to match the regular expression ^(_|[a-zA-Z0-9]+)$(ŒÊo8ª–“™¤1
+hgo:S100"IRename function "_abs" to match the regular expression ^(_|[a-zA-Z0-9]+)$(ß·ßŞıÿÿÿÿ8ª–“™¤1
+hgo:S100"IRename function "_add" to match the regular expression ^(_|[a-zA-Z0-9]+)$(àĞÍùÿÿÿÿ8ª–“™¤1
+hgo:S100"IRename function "_sub" to match the regular expression ^(_|[a-zA-Z0-9]+)$(½»×áùÿÿÿÿ8ª–“™¤1
+hgo:S100"IRename function "_div" to match the regular expression ^(_|[a-zA-Z0-9]+)$(¼¯¸–úÿÿÿÿ8«–“™¤1
+bgo:S100"IRename function "_len" to match the regular expression ^(_|[a-zA-Z0-9]+)$(£œé:8«–“™¤1
+hgo:S100!"NRename function "_isBetwen" to match the regular expression ^(_|[a-zA-Z0-9]+)$(ßÈâº8«–“™¤1
+cgo:S100%"IRename function "_max" to match the regular expression ^(_|[a-zA-Z0-9]+)$(ÅİÅÒ8«–“™¤1
+hgo:S100)"IRename function "_min" to match the regular expression ^(_|[a-zA-Z0-9]+)$( §±ìÿÿÿÿÿ8«–“™¤1
+igo:S100-"JRename function "_less" to match the regular expression ^(_|[a-zA-Z0-9]+)$(Šä¹°şÿÿÿÿ8«–“™¤1
+ogo:S1001"PRename function "_less_equal" to match the regular expression ^(_|[a-zA-Z0-9]+)$(•âÏñùÿÿÿÿ8«–“™¤1
+igo:S1005"JRename function "_hash" to match the regular expression ^(_|[a-zA-Z0-9]+)$(ÊÁ—´øÿÿÿÿ8«–“™¤1
+jgo:S117p"KRename this parameter to match the regular expression "^(_|[a-zA-Z0-9]+)$".(Æñ’šùÿÿÿÿ8¬–“™¤1
+ego:S100¹"JRename function "_init" to match the regular expression ^(_|[a-zA-Z0-9]+)$(„³²‘8¬–“™¤1

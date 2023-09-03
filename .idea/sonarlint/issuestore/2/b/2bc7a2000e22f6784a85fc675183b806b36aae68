@@ -1,0 +1,23 @@
+
+cgo:S1173"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(£¥Ş²
+hgo:S1174"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(åóÚ•şÿÿÿÿ
+bgo:S100F"ORename function "_dfsStreak" to match the regular expression ^(_|[a-zA-Z0-9]+)$(‹ß¸Ø
+cgo:S117G"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(Èİú
+hgo:S117J"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(’Üà°ûÿÿÿÿ
+hgo:S117M"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(Õ£Ø„ûÿÿÿÿ
+hgo:S117R"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(Õ£Ø„ûÿÿÿÿ
+kgo:S3776\"RRefactor this method to reduce its Cognitive Complexity from 38 to the 15 allowed.(×ØÙ‡ùÿÿÿÿ
+cgo:S117\"KRename this parameter to match the regular expression "^(_|[a-zA-Z0-9]+)$".(×ØÙ‡ùÿÿÿÿ
+jgo:S100\"RRename function "_findBestMove" to match the regular expression ^(_|[a-zA-Z0-9]+)$(×ØÙ‡ùÿÿÿÿ
+cgo:S117h"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(ğ®¿
+hgo:S117o"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(“Âˆ¬úÿÿÿÿ
+hgo:S117|"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(’Üà°ûÿÿÿÿ
+dgo:S117›"KRename this parameter to match the regular expression "^(_|[a-zA-Z0-9]+)$".(Ü¨ÇÎÿÿÿÿÿ
+ugo:S100›"\Rename function "_findBestMove_goroutine" to match the regular expression ^(_|[a-zA-Z0-9]+)$(Ü¨ÇÎÿÿÿÿÿ
+lgo:S3776£"RRefactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.(£º Ëüÿÿÿÿ
+dgo:S117¤"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(ğ®¿
+igo:S117«"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(Î™‰¯şÿÿÿÿ
+igo:S117¬"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(“Âˆ¬úÿÿÿÿ
+igo:S117»"PRename this local variable to match the regular expression "^(_|[a-zA-Z0-9]+)$".(’Üà°ûÿÿÿÿ
+ego:S100Ô"QRename function "_print_board" to match the regular expression ^(_|[a-zA-Z0-9]+)$(»èŸ¥
+igo:S100Ş"PRename function "_bot_vs_bot" to match the regular expression ^(_|[a-zA-Z0-9]+)$(©ë–ÿÿÿÿÿ
