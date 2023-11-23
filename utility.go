@@ -122,7 +122,7 @@ type ItemGame struct {
 
 func (it ItemGame) hash() int {
 	const b, m = 5, 100000000000031
-	var h = it.val.Turn
+	var h = it.val.Whose_turn
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			h *= b
@@ -152,25 +152,39 @@ func newItemGame(x Game) ItemGame {
 	return tmp
 }
 
+type GameKey struct {
+	Board      [8][8]int
+	Whose_turn int
+	Last_piece [2]int
+}
+
+func newGameKey(game Game) GameKey {
+	var tmp GameKey
+	tmp.Board = game.Board
+	tmp.Whose_turn = game.Whose_turn
+	tmp.Last_piece = game.Last_piece
+	return tmp
+}
+
 type MapGame struct {
 	mx sync.Mutex
-	mp map[Game]float64
+	mp map[GameKey]float64
 }
 
 func newMapGame() *MapGame {
 	return &MapGame{
-		mp: make(map[Game]float64),
+		mp: make(map[GameKey]float64),
 	}
 }
 
-func (mp *MapGame) get(key Game) (float64, bool) {
+func (mp *MapGame) get(key GameKey) (float64, bool) {
 	mp.mx.Lock()
 	defer mp.mx.Unlock()
 	val, ok := mp.mp[key]
 	return val, ok
 }
 
-func (mp *MapGame) insert(key Game, value float64) {
+func (mp *MapGame) insert(key GameKey, value float64) {
 	mp.mx.Lock()
 	defer mp.mx.Unlock()
 	mp.mp[key] = value
