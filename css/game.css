@@ -26,7 +26,7 @@ body {
 	background-color: black;
 	padding: 1% 0;
 	border: 2px solid black;
-	box-shadow: gray 0 0 15px 5px;
+	box-shadow: rgb(128, 128, 128) 0 0 15px 5px;
 }
 
 .field_square {
@@ -106,6 +106,26 @@ body {
 
 .end_turn_btn {
 	width: 100%;
+	text-align: center;
+	box-sizing: border-box;
+	padding: 10px;
+	border: 2px solid black;
+	border-radius: 10px;
+	margin-top: 10px;
+}
+
+.prev_turn_btn {
+	width: 30%;
+	text-align: center;
+	box-sizing: border-box;
+	padding: 10px;
+	border: 2px solid black;
+	border-radius: 10px;
+	margin-top: 10px;
+}
+
+.next_turn_btn {
+	width: 30%;
 	text-align: center;
 	box-sizing: border-box;
 	padding: 10px;

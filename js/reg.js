@@ -10,7 +10,7 @@ $(".submit_btn").click(function(){
     request.onload = function(){
         let response = request.response
         if(response !== "ok"){
-            alert(response);
+            alert("Недопустимый ник/логин");
         }
         else{
             window.location.href = url+"/";

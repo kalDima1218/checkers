@@ -1,5 +1,4 @@
 let url = "http://" + window.location.host
-console.log(url)
 $(".submit_btn").click(function(){
     let login = document.getElementById("login").value;
     let password = document.getElementById("password").value;
@@ -10,7 +9,7 @@ $(".submit_btn").click(function(){
     request.onload = function(){
         let response = request.response
         if(response !== "ok"){
-            alert(response);
+            alert("Неверный логин или пароль");
         }
         else{
             window.location.href = url+"/";

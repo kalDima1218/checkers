@@ -1,5 +1,8 @@
-let url = "http://" + window.location.host
-let selected = [-1, -1]
+let url = "http://" + window.location.host;
+let selected = [-1, -1];
+let current_turn = 0;
+let last_turn = 0;
+let actual_board;
 let params = window
     .location
     .search
@@ -38,6 +41,18 @@ function addClick(){
 	});
 }
 
+function updateTurn(){
+	let id = params["id"];
+	let request = new XMLHttpRequest();
+	request.open("GET", url+"/get_current_turn?id=" + id);
+	request.responseType = "text";
+	request.send();
+	request.onload = function() {
+		current_turn = parseInt(JSON.parse(request.response));
+		last_turn = parseInt(JSON.parse(request.response));
+	}
+}
+
 function update(){
 	let id = params["id"];
 	let request1 = new XMLHttpRequest();
@@ -46,6 +61,11 @@ function update(){
 	request1.send();
 	request1.onload = function() {
 		let board = JSON.parse(request1.response);
+		if(JSON.stringify(board) === JSON.stringify(actual_board)){
+			return;
+		}
+		actual_board = board;
+		updateTurn();
 		let new_board = ""
 		for(let i = 0; i < 8; i+=1){
 			for(let j = 0; j < 8; j+=1){
@@ -111,6 +131,98 @@ $(".end_turn_btn").click(function(){
 	request.responseType = "text";
 	request.send();
 	request.onload = function(){}
+});
+
+$(".prev_turn_btn").click(function(){
+	let request = new XMLHttpRequest();
+	if(current_turn === 0){
+		return;
+	}
+	current_turn -= 1;
+	request.open("GET", url+"/get_board_hist?id="+params["id"]+"&turn="+current_turn);
+	request.responseType = "text";
+	request.send();
+	request.onload = function() {
+		let board = JSON.parse(request.response);
+		if(board === ""){
+			return;
+		}
+		let new_board = ""
+		for(let i = 0; i < 8; i+=1){
+			for(let j = 0; j < 8; j+=1){
+				new_board+='<div class="field_square">';
+				if(board[i][j] === 0){
+					new_board+='<p class="void-piece" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				else if(board[i][j] === 1){
+					new_board+='<p class="red-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				else if(board[i][j] === 2){
+					new_board+='<p class="black-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				else if(board[i][j] === 3){
+					new_board+='<p class="red-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				else if(board[i][j] === 4){
+					new_board+='<p class="black-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				new_board+='</div>\n';
+			}
+			new_board+='<div style="display: none"></div>\n';
+		}
+		if(document.getElementById("board").innerHTML !== new_board){
+			document.getElementById("board").innerHTML = new_board
+		}
+		if(selected[0] !== -1){
+			document.getElementById("cell-" + selected[0].toString() + "-" + selected[1].toString()).classList.add("selected");
+		}
+	};
+});
+
+$(".next_turn_btn").click(function(){
+	let request = new XMLHttpRequest();
+	if(current_turn === last_turn){
+		return;
+	}
+	current_turn += 1;
+	request.open("GET", url+"/get_board_hist?id="+params["id"]+"&turn="+current_turn);
+	request.responseType = "text";
+	request.send();
+	request.onload = function() {
+		let board = JSON.parse(request.response);
+		if(board === ""){
+			return;
+		}
+		let new_board = ""
+		for(let i = 0; i < 8; i+=1){
+			for(let j = 0; j < 8; j+=1){
+				new_board+='<div class="field_square">';
+				if(board[i][j] === 0){
+					new_board+='<p class="void-piece" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				else if(board[i][j] === 1){
+					new_board+='<p class="red-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				else if(board[i][j] === 2){
+					new_board+='<p class="black-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				else if(board[i][j] === 3){
+					new_board+='<p class="red-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				else if(board[i][j] === 4){
+					new_board+='<p class="black-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+				}
+				new_board+='</div>\n';
+			}
+			new_board+='<div style="display: none"></div>\n';
+		}
+		if(document.getElementById("board").innerHTML !== new_board){
+			document.getElementById("board").innerHTML = new_board
+		}
+		if(selected[0] !== -1){
+			document.getElementById("cell-" + selected[0].toString() + "-" + selected[1].toString()).classList.add("selected");
+		}
+	};
 });
 
 function setPlayers() {
