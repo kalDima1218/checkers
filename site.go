@@ -18,7 +18,7 @@ var BOT_PLAYER = newPlayer("BOT", "BOT", "")
 
 var games = make(map[string]Game)
 
-var wating_game = newTreap()
+var waiting_game = newTreap()
 var waiting_for = make(map[string]string)
 var last_seen = make(map[string]int)
 
@@ -223,11 +223,11 @@ func startGame(w http.ResponseWriter, r *http.Request) {
 	var login = getCookie(r, "login")
 	_, ok := last_seen[login]
 	if ok {
-		wating_game.erase(newItemWatingGame(login, last_seen[login]))
+		waiting_game.erase(newItemWatingGame(login, last_seen[login]))
 		delete(last_seen, login)
 	}
-	if !wating_game.empty() {
-		var partner = wating_game.begin().i.getFieldString("player")
+	if !waiting_game.empty() {
+		var partner = waiting_game.begin().i.getFieldString("player")
 		var id = strconv.Itoa(rand.Int())
 		games[id] = newGame(players[login], players[partner])
 		waiting_for[partner] = id
@@ -235,7 +235,7 @@ func startGame(w http.ResponseWriter, r *http.Request) {
 		redirectTo(w, r, "waiting_game")
 	} else {
 		last_seen[login] = int(time.Now().Unix())
-		wating_game.insert(newItemWatingGame(login, last_seen[login]))
+		waiting_game.insert(newItemWatingGame(login, last_seen[login]))
 		redirectTo(w, r, "waiting_game")
 	}
 }
@@ -359,6 +359,22 @@ func whoseMove(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, strconv.Itoa(games[id].Whose_turn))
 }
 
+func getSide(w http.ResponseWriter, r *http.Request) {
+	var id = r.URL.Query().Get("id")
+	var login = getCookie(r, "login")
+	game, ok := games[id]
+	if !ok {
+		return
+	}
+	if game.Players[0] == login {
+		fmt.Fprintf(w, "0")
+		return
+	} else {
+		fmt.Fprintf(w, "1")
+		return
+	}
+}
+
 // getPlayers retrieves the players' names and sends them as a JSON response.
 //
 // It takes a ResponseWriter and a Request as parameters.
@@ -459,6 +475,7 @@ func setupRoutes() {
 	http.HandleFunc("/make_move", makeMove)
 	http.HandleFunc("/end_move", endMove)
 	http.HandleFunc("/whose_move", whoseMove)
+	http.HandleFunc("/get_side", getSide)
 	http.HandleFunc("/get_players", getPlayers)
 	http.HandleFunc("/who_win", whoWin)
 	http.HandleFunc("/start_game", startGame)

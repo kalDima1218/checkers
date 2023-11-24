@@ -3,6 +3,7 @@ let selected = [-1, -1];
 let current_turn = 0;
 let last_turn = 0;
 let actual_board;
+let side = 0;
 let params = window
     .location
     .search
@@ -67,27 +68,45 @@ function update(){
 		actual_board = board;
 		updateTurn();
 		let new_board = ""
-		for(let i = 0; i < 8; i+=1){
-			for(let j = 0; j < 8; j+=1){
-				new_board+='<div class="field_square">';
-				if(board[i][j] === 0){
-					new_board+='<p class="void-piece" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+		if(side === 1) {
+			for (let i = 0; i < 8; i += 1) {
+				for (let j = 0; j < 8; j += 1) {
+					new_board += '<div class="field_square">';
+					if (board[i][j] === 0) {
+						new_board += '<p class="void-piece" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 1) {
+						new_board += '<p class="red-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 2) {
+						new_board += '<p class="black-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 3) {
+						new_board += '<p class="red-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 4) {
+						new_board += '<p class="black-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					}
+					new_board += '</div>\n';
 				}
-				else if(board[i][j] === 1){
-					new_board+='<p class="red-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 2){
-					new_board+='<p class="black-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 3){
-					new_board+='<p class="red-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 4){
-					new_board+='<p class="black-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				new_board+='</div>\n';
+				new_board += '<div style="display: none"></div>\n';
 			}
-			new_board+='<div style="display: none"></div>\n';
+		}
+		else{
+			for (let i = 0; i < 8; i += 1) {
+				for (let j = 0; j < 8; j += 1) {
+					new_board += '<div class="field_square">';
+					if (board[7-i][7-j] === 0) {
+						new_board += '<p class="void-piece" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 1) {
+						new_board += '<p class="red-piece cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 2) {
+						new_board += '<p class="black-piece cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 3) {
+						new_board += '<p class="red-piece king cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 4) {
+						new_board += '<p class="black-piece king cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					}
+					new_board += '</div>\n';
+				}
+				new_board += '<div style="display: none"></div>\n';
+			}
 		}
 		if(document.getElementById("board").innerHTML !== new_board){
 			document.getElementById("board").innerHTML = new_board
@@ -95,19 +114,19 @@ function update(){
 		if(selected[0] !== -1){
 			document.getElementById("cell-" + selected[0].toString() + "-" + selected[1].toString()).classList.add("selected");
 		}
-		let request2 = new XMLHttpRequest();
-		request2.open("GET", url+"/whose_move?id=" + id);
-		request2.responseType = "text";
-		request2.send();
-		request2.onload = function() {
-			if(request2.response === "0"){
-				document.getElementById("turn").innerHTML = "Ходит: красный";
-			}
-			else{
-				document.getElementById("turn").innerHTML = "Ходит: черный";
-			}
-		}
 	};
+	let request2 = new XMLHttpRequest();
+	request2.open("GET", url+"/whose_move?id=" + id);
+	request2.responseType = "text";
+	request2.send();
+	request2.onload = function() {
+		if(request2.response === "0"){
+			document.getElementById("turn").innerHTML = "Ходит: красный";
+		}
+		else{
+			document.getElementById("turn").innerHTML = "Ходит: черный";
+		}
+	}
 	for(let i of document.getElementsByClassName("selected")){
 		i.classList.remove("selected");
 	}
@@ -148,27 +167,45 @@ $(".prev_turn_btn").click(function(){
 			return;
 		}
 		let new_board = ""
-		for(let i = 0; i < 8; i+=1){
-			for(let j = 0; j < 8; j+=1){
-				new_board+='<div class="field_square">';
-				if(board[i][j] === 0){
-					new_board+='<p class="void-piece" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+		if(side === 1) {
+			for (let i = 0; i < 8; i += 1) {
+				for (let j = 0; j < 8; j += 1) {
+					new_board += '<div class="field_square">';
+					if (board[i][j] === 0) {
+						new_board += '<p class="void-piece" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 1) {
+						new_board += '<p class="red-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 2) {
+						new_board += '<p class="black-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 3) {
+						new_board += '<p class="red-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 4) {
+						new_board += '<p class="black-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					}
+					new_board += '</div>\n';
 				}
-				else if(board[i][j] === 1){
-					new_board+='<p class="red-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 2){
-					new_board+='<p class="black-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 3){
-					new_board+='<p class="red-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 4){
-					new_board+='<p class="black-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				new_board+='</div>\n';
+				new_board += '<div style="display: none"></div>\n';
 			}
-			new_board+='<div style="display: none"></div>\n';
+		}
+		else{
+			for (let i = 0; i < 8; i += 1) {
+				for (let j = 0; j < 8; j += 1) {
+					new_board += '<div class="field_square">';
+					if (board[7-i][7-j] === 0) {
+						new_board += '<p class="void-piece" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 1) {
+						new_board += '<p class="red-piece cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 2) {
+						new_board += '<p class="black-piece cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 3) {
+						new_board += '<p class="red-piece king cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 4) {
+						new_board += '<p class="black-piece king cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					}
+					new_board += '</div>\n';
+				}
+				new_board += '<div style="display: none"></div>\n';
+			}
 		}
 		if(document.getElementById("board").innerHTML !== new_board){
 			document.getElementById("board").innerHTML = new_board
@@ -194,27 +231,45 @@ $(".next_turn_btn").click(function(){
 			return;
 		}
 		let new_board = ""
-		for(let i = 0; i < 8; i+=1){
-			for(let j = 0; j < 8; j+=1){
-				new_board+='<div class="field_square">';
-				if(board[i][j] === 0){
-					new_board+='<p class="void-piece" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+		if(side === 1) {
+			for (let i = 0; i < 8; i += 1) {
+				for (let j = 0; j < 8; j += 1) {
+					new_board += '<div class="field_square">';
+					if (board[i][j] === 0) {
+						new_board += '<p class="void-piece" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 1) {
+						new_board += '<p class="red-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 2) {
+						new_board += '<p class="black-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 3) {
+						new_board += '<p class="red-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					} else if (board[i][j] === 4) {
+						new_board += '<p class="black-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
+					}
+					new_board += '</div>\n';
 				}
-				else if(board[i][j] === 1){
-					new_board+='<p class="red-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 2){
-					new_board+='<p class="black-piece cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 3){
-					new_board+='<p class="red-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				else if(board[i][j] === 4){
-					new_board+='<p class="black-piece king cell" id="cell-' + i.toString() + '-' + j.toString() + '"></p>';
-				}
-				new_board+='</div>\n';
+				new_board += '<div style="display: none"></div>\n';
 			}
-			new_board+='<div style="display: none"></div>\n';
+		}
+		else{
+			for (let i = 0; i < 8; i += 1) {
+				for (let j = 0; j < 8; j += 1) {
+					new_board += '<div class="field_square">';
+					if (board[7-i][7-j] === 0) {
+						new_board += '<p class="void-piece" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 1) {
+						new_board += '<p class="red-piece cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 2) {
+						new_board += '<p class="black-piece cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 3) {
+						new_board += '<p class="red-piece king cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					} else if (board[7-i][7-j] === 4) {
+						new_board += '<p class="black-piece king cell" id="cell-' + (7-i).toString() + '-' + (7-j).toString() + '"></p>';
+					}
+					new_board += '</div>\n';
+				}
+				new_board += '<div style="display: none"></div>\n';
+			}
 		}
 		if(document.getElementById("board").innerHTML !== new_board){
 			document.getElementById("board").innerHTML = new_board
@@ -234,6 +289,18 @@ function setPlayers() {
 		let players = JSON.parse(request.response);
 		document.getElementById("player0").innerHTML = "Красный: " + players[0];
 		document.getElementById("player1").innerHTML = "Черный: " + players[1];
+	}
+	let request1 = new XMLHttpRequest();
+	request1.open("GET", url + "/get_side?id=" + params["id"]);
+	request1.responseType = "text";
+	request1.send();
+	request1.onload = function () {
+		if(request1.response === "0"){
+			side = 0;
+		}
+		else{
+			side = 1;
+		}
 	}
 }
 
