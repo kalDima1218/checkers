@@ -18,7 +18,7 @@ var BOT_PLAYER = newPlayer("BOT", "BOT", "")
 
 var games = make(map[string]Game)
 
-var wating_game = newTreap()
+var waiting_game = newTreap()
 var waiting_for = make(map[string]string)
 var last_seen = make(map[string]int)
 
@@ -223,11 +223,11 @@ func startGame(w http.ResponseWriter, r *http.Request) {
 	var login = getCookie(r, "login")
 	_, ok := last_seen[login]
 	if ok {
-		wating_game.erase(newItemWatingGame(login, last_seen[login]))
+		waiting_game.erase(newItemWatingGame(login, last_seen[login]))
 		delete(last_seen, login)
 	}
-	if !wating_game.empty() {
-		var partner = wating_game.begin().i.getFieldString("player")
+	if !waiting_game.empty() {
+		var partner = waiting_game.begin().i.getFieldString("player")
 		var id = strconv.Itoa(rand.Int())
 		games[id] = newGame(players[login], players[partner])
 		waiting_for[partner] = id
@@ -235,7 +235,7 @@ func startGame(w http.ResponseWriter, r *http.Request) {
 		redirectTo(w, r, "waiting_game")
 	} else {
 		last_seen[login] = int(time.Now().Unix())
-		wating_game.insert(newItemWatingGame(login, last_seen[login]))
+		waiting_game.insert(newItemWatingGame(login, last_seen[login]))
 		redirectTo(w, r, "waiting_game")
 	}
 }
@@ -295,22 +295,6 @@ func waitingGame(w http.ResponseWriter, r *http.Request) {
 	page.Execute(w, "")
 }
 
-// getBoard retrieves the game board based on the provided ID.
-//
-// It takes in two parameters:
-// - w, which is an http.ResponseWriter that is used to write the response back to the client.
-// - r, which is an http.Request that represents the incoming HTTP request.
-//
-// This function does not return anything.
-func getBoard(w http.ResponseWriter, r *http.Request) {
-	var id = r.URL.Query().Get("id")
-	game, ok := games[id]
-	if !ok {
-		return
-	}
-	fmt.Fprintf(w, game.getJsonBoard())
-}
-
 // getBoardHist is a Go function that retrieves the board history for a game.
 //
 // It takes in two parameters:
@@ -329,17 +313,13 @@ func getBoardHist(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(board_json))
 }
 
-// getCurrentTurn retrieves the current turn of a game.
-//
-// It takes in an http.ResponseWriter and an http.Request as parameters.
-// It returns nothing.
-func getCurrentTurn(w http.ResponseWriter, r *http.Request) {
+func getLastMoveNumber(w http.ResponseWriter, r *http.Request) {
 	var id = r.URL.Query().Get("id")
 	_, ok := games[id]
 	if !ok {
 		return
 	}
-	fmt.Fprintf(w, strconv.Itoa(games[id].Current_turn))
+	fmt.Fprintf(w, strconv.Itoa(len(games[id].Turns)-1))
 }
 
 // whoseMove returns the current player's turn for a given game ID.
@@ -356,7 +336,23 @@ func whoseMove(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	fmt.Fprintf(w, strconv.Itoa(games[id].Whose_turn))
+	fmt.Fprintf(w, strconv.Itoa(games[id].Board.Whose_turn))
+}
+
+func getSide(w http.ResponseWriter, r *http.Request) {
+	var id = r.URL.Query().Get("id")
+	var login = getCookie(r, "login")
+	game, ok := games[id]
+	if !ok {
+		return
+	}
+	if game.Players[0] == login {
+		fmt.Fprintf(w, "0")
+		return
+	} else {
+		fmt.Fprintf(w, "1")
+		return
+	}
 }
 
 // getPlayers retrieves the players' names and sends them as a JSON response.
@@ -406,11 +402,16 @@ func makeMove(w http.ResponseWriter, r *http.Request) {
 	to_x, _ := strconv.Atoi(r.URL.Query().Get("to_x"))
 	to_y, _ := strconv.Atoi(r.URL.Query().Get("to_y"))
 	game, ok := games[id]
-	if !ok || game.Players[game.Whose_turn] != login {
+	if !ok || game.Players[game.Board.Whose_turn] != login {
 		return
 	}
-	game.makeMove([2]int{from_x, from_y}, [2]int{to_x, to_y})
-	games[id] = game
+	if game.makeMove([2]int{from_x, from_y}, [2]int{to_x, to_y}) {
+		games[id] = game
+		fmt.Fprintf(w, "1")
+		fmt.Println(from_x, from_y, to_x, to_y)
+	} else {
+		fmt.Fprintf(w, "0")
+	}
 }
 
 // endMove handles the end of a player's move in the game.
@@ -425,14 +426,17 @@ func endMove(w http.ResponseWriter, r *http.Request) {
 	var id = r.URL.Query().Get("id")
 	var login = getCookie(r, "login")
 	game, ok := games[id]
-	if !ok || game.Players[game.Whose_turn] != login {
+	if !ok || game.Players[game.Board.Whose_turn] != login || game.Board.Last_piece == [2]int{-1, -1} {
+		fmt.Fprintf(w, "0")
 		return
 	}
 	game.endMove()
-	if game.Players[game.Whose_turn] == "BOT" {
-		game = BOT.findBestMove(game, game.Whose_turn, (game.Whose_turn+1)%2)
+	if game.Players[game.Board.Whose_turn] == "BOT" {
+		BOT.makeMove(&game)
+		//game = BOT.findBestMove(game, game.Board.Whose_turn, (game.Board.Whose_turn+1)%2)
 	}
 	games[id] = game
+	fmt.Fprintf(w, "1")
 }
 
 // setupRoutes sets up the routes for the HTTP server.
@@ -455,17 +459,17 @@ func setupRoutes() {
 	http.HandleFunc("/logout", logout)
 	http.HandleFunc("/_reg", reg)
 	http.HandleFunc("/_login", login)
-	http.HandleFunc("/get_board", getBoard)
 	http.HandleFunc("/make_move", makeMove)
 	http.HandleFunc("/end_move", endMove)
 	http.HandleFunc("/whose_move", whoseMove)
+	http.HandleFunc("/get_side", getSide)
 	http.HandleFunc("/get_players", getPlayers)
 	http.HandleFunc("/who_win", whoWin)
 	http.HandleFunc("/start_game", startGame)
 	http.HandleFunc("/get_waiting", getWaiting)
 	http.HandleFunc("/start_bot_game", startBotGame)
 	http.HandleFunc("/waiting_game", waitingGame)
-	http.HandleFunc("/get_current_turn", getCurrentTurn)
+	http.HandleFunc("/get_last_move_number", getLastMoveNumber)
 	http.HandleFunc("/get_board_hist", getBoardHist)
 	// FILE SECTION
 	http.HandleFunc("/game.js", func(w http.ResponseWriter, r *http.Request) {

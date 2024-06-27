@@ -29,7 +29,7 @@ type Bot struct {
 // instance for the moves_table field.
 //
 // Returns a pointer to the newly created Bot instance.
-func newBot() *Bot {
+func newBot() Bot {
 	var tmp Bot
 	tmp.max_depth = MAX_DEPTH
 	tmp.cell_cost = 10
@@ -46,14 +46,14 @@ func newBot() *Bot {
 		{0, 1.15, 0, 1.2, 0, 1.15, 0, 1.0},
 	}
 	tmp.moves_table = *newMapGame()
-	return &tmp
+	return tmp
 }
 
 // evaluate calculates the evaluation score of the game for the bot.
 //
 // It takes in a `game` object representing the current game state.
 // The function returns a `float64` representing the evaluation score of the game.
-func (bot *Bot) evaluate(game *Game) float64 {
+func (bot *Bot) evaluate(game Board) float64 {
 	if game.isGameEnded() {
 		if game.isWin(0) {
 			return bot.win_cost
@@ -88,20 +88,19 @@ func (bot *Bot) evaluate(game *Game) float64 {
 // - enemy: the ID of the enemy player
 //
 // It returns a Game object representing the best game state found.
-func (bot *Bot) _dfsStreak(game Game, me int, enemy int) Game {
+func (bot *Bot) _dfsStreak(game Board, me int, enemy int) Board {
 	var max_game = game
 	for _, k := range POSSIBLE_TURNS {
 		if game.canMove(game.Last_piece, _add(game.Last_piece, k)) {
 			var _game = game
-			_game.makeMove(game.Last_piece, _add(game.Last_piece, k))
+			_game.makeMove(_game.Last_piece, _add(_game.Last_piece, k))
+			_game = bot._dfsStreak(_game, me, enemy)
 			if game.Whose_turn == 0 {
-				_game := bot._dfsStreak(_game, me, enemy)
-				if bot.evaluate(&_game) > bot.evaluate(&max_game) {
+				if bot.evaluate(_game) > bot.evaluate(max_game) {
 					max_game = _game
 				}
 			} else {
-				_game := bot._dfsStreak(_game, me, enemy)
-				if bot.evaluate(&_game) < bot.evaluate(&max_game) {
+				if bot.evaluate(_game) < bot.evaluate(max_game) {
 					max_game = _game
 				}
 			}
@@ -121,17 +120,17 @@ func (bot *Bot) _dfsStreak(game Game, me int, enemy int) Game {
 //
 // Return type:
 //   - float64: the score of the best move
-func (bot *Bot) _findBestMove(game Game, depth int, me int, enemy int, prev_score float64) float64 {
+func (bot *Bot) _findBestMove(game Board, depth int, me int, enemy int, prev_score float64) float64 {
 	//val, ok := bot.moves_table.get(newItemGame(game))
 	//if ok {
 	//	return val
 	//}
-	val, ok := bot.moves_table.get(newGameKey(game))
+	val, ok := bot.moves_table.get(game)
 	if ok {
 		return val
 	}
 	if depth == bot.max_depth || game.isGameEnded() {
-		return bot.evaluate(&game)
+		return bot.evaluate(game)
 	}
 	var possible_turns [28][2]int
 	for i := 1; i <= 7; i++ {
@@ -172,7 +171,7 @@ func (bot *Bot) _findBestMove(game Game, depth int, me int, enemy int, prev_scor
 			}
 		}
 	}
-	bot.moves_table.insert(newGameKey(game), max_score)
+	bot.moves_table.insert(game, max_score)
 	return max_score
 }
 
@@ -183,11 +182,11 @@ func (bot *Bot) _findBestMove(game Game, depth int, me int, enemy int, prev_scor
 // - game: a pointer to the Game struct
 //
 // The function returns a float64 value.
-func (bot *Bot) gameTemp(game *Game) float64 {
+func (bot *Bot) gameTemp(game Board) float64 {
 	if game.Whose_turn == 0 {
-		return bot._findBestMove(*game, 0, 0, 1, -1e9)
+		return bot._findBestMove(game, 0, 0, 1, -1e9)
 	} else {
-		return bot._findBestMove(*game, 0, 0, 1, 1e9)
+		return bot._findBestMove(game, 0, 0, 1, 1e9)
 	}
 }
 
@@ -199,7 +198,7 @@ func (bot *Bot) gameTemp(game *Game) float64 {
 // - me: an integer representing the bot's player ID.
 // - enemy: an integer representing the enemy player ID.
 // - move_chanel: a channel to send the calculated move.
-func _findBestMove_goroutine(bot *Bot, game Game, me int, enemy int, move_chanel chan Move) {
+func _findBestMove_goroutine(bot *Bot, game Board, me int, enemy int, move_chanel chan Move) {
 	if game.Whose_turn == 0 {
 		move_chanel <- newMove(bot._findBestMove(game, 1, me, enemy, -1e9), game)
 	} else {
@@ -216,14 +215,7 @@ func _findBestMove_goroutine(bot *Bot, game Game, me int, enemy int, move_chanel
 //
 // Returns:
 // - Game: the updated game object after making the best move.
-func (bot *Bot) findBestMove(game Game, me int, enemy int) Game {
-	var possible_turns [28][2]int
-	for i := 1; i <= 7; i++ {
-		possible_turns[i-1] = [2]int{i, i}
-		possible_turns[7+i-1] = [2]int{i, -i}
-		possible_turns[14+i-1] = [2]int{-i, i}
-		possible_turns[21+i-1] = [2]int{-i, -i}
-	}
+func (bot *Bot) findBestMove(game Board, me int, enemy int) Board {
 	var move_chanel = make(chan Move)
 	var max_score float64
 	if game.Whose_turn == 0 {
@@ -231,16 +223,15 @@ func (bot *Bot) findBestMove(game Game, me int, enemy int) Game {
 	} else {
 		max_score = 1e9
 	}
-	var turns []Move
 	var cnt = 0
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			if game.Board[i][j] != game.Whose_turn+1 && game.Board[i][j] != 2+game.Whose_turn+1 {
 				continue
 			}
-			for _, k := range possible_turns {
+			for _, k := range POSSIBLE_TURNS {
 				if game.canMove([2]int{i, j}, _add([2]int{i, j}, k)) {
-					var _game = game
+					_game := game
 					_game.makeMove([2]int{i, j}, _add([2]int{i, j}, k))
 					_game = bot._dfsStreak(_game, me, enemy)
 					_game.endMove()
@@ -250,26 +241,32 @@ func (bot *Bot) findBestMove(game Game, me int, enemy int) Game {
 			}
 		}
 	}
+	var turns []Board
 	for cnt > 0 {
 		move := <-move_chanel
 		if (game.Whose_turn == 0 && move.score > max_score) || (game.Whose_turn == 1 && move.score < max_score) {
-			turns = make([]Move, 1)
-			turns[0] = move
+			turns = make([]Board, 1)
+			turns[0] = move.game
 			max_score = move.score
 		} else if move.score == max_score {
-			turns = append(turns, move)
+			turns = append(turns, move.game)
 		}
 		cnt--
 	}
 	bot.moves_table.clear()
-	return turns[rand.Int()%len(turns)].game
+	return turns[rand.Int()%len(turns)]
+}
+
+func (bot *Bot) makeMove(game *Game) {
+	game.Board = bot.findBestMove(game.Board, game.Board.Whose_turn, (game.Board.Whose_turn+1)%2)
+	game.Turns = append(game.Turns, game.Board.Board)
 }
 
 // _print_board prints the game board.
 //
 // It takes a pointer to a Game struct as a parameter.
 // It does not return anything.
-func _print_board(game *Game) {
+func _print_board(game Board) {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			fmt.Print(game.Board[i][j])
@@ -297,9 +294,9 @@ func _bot_vs_bot() {
 	var game = newGame(player1, player2)
 	var cnt = 0
 	for !game.isGameEnded() {
-		game = BOT.findBestMove(game, cnt, (cnt+1)%2)
-		fmt.Println(math.Round(BOT.gameTemp(&game)))
-		_print_board(&game)
+		game.Board = BOT.findBestMove(game.Board, cnt, (cnt+1)%2)
+		fmt.Println(math.Round(BOT.gameTemp(game.Board)))
+		_print_board(game.Board)
 		cnt++
 		cnt %= 2
 	}

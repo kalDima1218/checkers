@@ -27,7 +27,7 @@ func _div(a [2]int, b int) [2]int {
 }
 
 func _len(a [2]int, b [2]int) int {
-	return int(math.Sqrt((math.Pow(float64(b[0]-a[0]), 2) + math.Pow(float64(b[1]-a[1]), 2)) / 2))
+	return _abs(b[0] - a[0])
 }
 
 func _isBetwen(l [2]int, m [2]int, r [2]int) bool {
@@ -64,10 +64,10 @@ func _hash(s string) int {
 
 type Move struct {
 	score float64
-	game  Game
+	game  Board
 }
 
-func newMove(score float64, game Game) Move {
+func newMove(score float64, game Board) Move {
 	var tmp Move
 	tmp.score = score
 	tmp.game = game
@@ -122,12 +122,12 @@ type ItemGame struct {
 
 func (it ItemGame) hash() int {
 	const b, m = 5, 100000000000031
-	var h = it.val.Whose_turn
+	var h = it.val.Board.Whose_turn
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			h *= b
 			h %= m
-			h += it.val.Board[i][j]
+			h += it.val.Board.Board[i][j]
 			h %= m
 		}
 	}
@@ -152,39 +152,25 @@ func newItemGame(x Game) ItemGame {
 	return tmp
 }
 
-type GameKey struct {
-	Board      [8][8]int
-	Whose_turn int
-	Last_piece [2]int
-}
-
-func newGameKey(game Game) GameKey {
-	var tmp GameKey
-	tmp.Board = game.Board
-	tmp.Whose_turn = game.Whose_turn
-	tmp.Last_piece = game.Last_piece
-	return tmp
-}
-
 type MapGame struct {
 	mx sync.Mutex
-	mp map[GameKey]float64
+	mp map[Board]float64
 }
 
 func newMapGame() *MapGame {
 	return &MapGame{
-		mp: make(map[GameKey]float64),
+		mp: make(map[Board]float64),
 	}
 }
 
-func (mp *MapGame) get(key GameKey) (float64, bool) {
+func (mp *MapGame) get(key Board) (float64, bool) {
 	mp.mx.Lock()
 	defer mp.mx.Unlock()
 	val, ok := mp.mp[key]
 	return val, ok
 }
 
-func (mp *MapGame) insert(key GameKey, value float64) {
+func (mp *MapGame) insert(key Board, value float64) {
 	mp.mx.Lock()
 	defer mp.mx.Unlock()
 	mp.mp[key] = value
