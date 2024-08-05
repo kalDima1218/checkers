@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Шашки</title>
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="../index.css">
 </head>
 <body>
-    <button class="logout_btn">Выйти</button>
-    <button class="new_game_btn">Новая игра</button>
-    <input placeholder="id" id="id">
-    <button class="enter_game_btn">Войти</button>
-    <button class="new_bot_game_btn">Новая игра с ботом</button>
+<div class="wrapper">
+    <div style="width: 240px; margin-top: 80px">
+        <button class="new_game_btn btn">Новая игра</button>
+        <button class="new_bot_game_btn btn" style="margin-top:20px">Новая игра с ботом</button>
+        <input class="btn" style="margin-top:20px" placeholder="id партии" id="id">
+        <button class="enter_game_btn btn">Продолжить</button>
+        <button class="logout_btn btn" style="margin-top:20px">Выйти</button>
+    </div>
+</div>
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="../index.js"></script>

@@ -4,7 +4,7 @@ package main
 type Player struct {
 	Login    string
 	Password string
-	Name     string
+	Username string
 	Elo      int
 }
 
@@ -17,11 +17,11 @@ type Player struct {
 //
 // Returns:
 // - Player: the newly created player.
-func newPlayer(name string, login string, password string) Player {
+func newPlayer(username string, login string, password string) Player {
 	var tmp Player
 	tmp.Login = login
 	tmp.Password = password
-	tmp.Name = name
+	tmp.Username = username
 	tmp.Elo = 1500
 	return tmp
 }

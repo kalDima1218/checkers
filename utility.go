@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"net/http"
 	"strconv"
 	"sync"
 )
@@ -74,27 +75,20 @@ func newMove(score float64, game Board) Move {
 	return tmp
 }
 
-type Item interface {
-	hash() int
-	getSize() int
-	getVal(n int) string
-	getFieldString(field string) string
-}
-
-type ItemWatingGame struct {
+type ItemWaitingGame struct {
 	val    int
 	player string
 }
 
-func (i ItemWatingGame) hash() int {
+func (i ItemWaitingGame) hash() int {
 	return _abs(i.val)
 }
 
-func (i ItemWatingGame) getSize() int {
+func (i ItemWaitingGame) getSize() int {
 	return len(strconv.Itoa(i.val))
 }
 
-func (i ItemWatingGame) getVal(n int) string {
+func (i ItemWaitingGame) getVal(n int) string {
 	var val = strconv.Itoa(i.val)
 	for len(val) < n {
 		val = "0" + val
@@ -102,53 +96,17 @@ func (i ItemWatingGame) getVal(n int) string {
 	return val
 }
 
-func (i ItemWatingGame) getFieldString(field string) string {
+func (i ItemWaitingGame) getFieldString(field string) string {
 	if field == "player" {
 		return i.player
 	}
 	return ""
 }
 
-func newItemWatingGame(player string, _time int) Item {
-	var tmp ItemWatingGame
+func newItemWaitingGame(player string, _time int) Item {
+	var tmp ItemWaitingGame
 	tmp.val = _time
 	tmp.player = player
-	return tmp
-}
-
-type ItemGame struct {
-	val Game
-}
-
-func (it ItemGame) hash() int {
-	const b, m = 5, 100000000000031
-	var h = it.val.Board.Whose_turn
-	for i := 0; i < 8; i++ {
-		for j := 0; j < 8; j++ {
-			h *= b
-			h %= m
-			h += it.val.Board.Board[i][j]
-			h %= m
-		}
-	}
-	return h
-}
-
-func (it ItemGame) getSize() int {
-	return 0
-}
-
-func (it ItemGame) getVal(n int) string {
-	return ""
-}
-
-func (it ItemGame) getFieldString(field string) string {
-	return ""
-}
-
-func newItemGame(x Game) ItemGame {
-	var tmp ItemGame
-	tmp.val = x
 	return tmp
 }
 
@@ -191,5 +149,23 @@ func _init() {
 	}
 	players[BOT_PLAYER.Login] = BOT_PLAYER
 	logins[BOT_PLAYER.Login] = true
-	names[BOT_PLAYER.Name] = true
+	names[BOT_PLAYER.Username] = true
+}
+
+func redirectToIndex(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "http://"+URL+":"+PORT+"/", http.StatusSeeOther)
+}
+
+func redirectTo(w http.ResponseWriter, r *http.Request, page string) {
+	http.Redirect(w, r, "http://"+URL+":"+PORT+"/"+page, http.StatusSeeOther)
+}
+
+func resetCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{Name: "login", Value: "", MaxAge: -1})
+	http.SetCookie(w, &http.Cookie{Name: "password", Value: "", MaxAge: -1})
+}
+
+func getCookie(r *http.Request, data_key string) string {
+	data, _ := r.Cookie(data_key)
+	return data.Value
 }

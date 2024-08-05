@@ -5,6 +5,13 @@ import (
 	"math/rand"
 )
 
+type Item interface {
+	hash() int
+	getSize() int
+	getVal(n int) string
+	getFieldString(field string) string
+}
+
 type Node struct {
 	i            Item
 	p            int

@@ -4,7 +4,7 @@ $(".submit_btn").click(function(){
     let login = document.getElementById("login").value;
     let password = document.getElementById("password").value;
     let request = new XMLHttpRequest();
-    request.open("POST", url+"/_reg?name=" + name + "&login=" + login + "&password=" + password);
+    request.open("POST", url+"/reg?name=" + name + "&login=" + login + "&password=" + password);
     request.responseType = "text";
     request.send();
     request.onload = function(){

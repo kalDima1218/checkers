@@ -122,6 +122,7 @@ body {
 	border: 2px solid black;
 	border-radius: 10px;
 	margin-top: 10px;
+	margin-left: 5px;
 }
 
 .next_turn_btn {
@@ -132,4 +133,5 @@ body {
 	border: 2px solid black;
 	border-radius: 10px;
 	margin-top: 10px;
+	margin-right: 5px;
 }
