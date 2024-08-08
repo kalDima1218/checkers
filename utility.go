@@ -4,7 +4,6 @@ import (
 	"math"
 	"net/http"
 	"strconv"
-	"sync"
 )
 
 func _dist(a [2]int, b [2]int) [2]int {
@@ -108,48 +107,6 @@ func newItemWaitingGame(player string, _time int) Item {
 	tmp.val = _time
 	tmp.player = player
 	return tmp
-}
-
-type MapGame struct {
-	mx sync.Mutex
-	mp map[Board]float64
-}
-
-func newMapGame() *MapGame {
-	return &MapGame{
-		mp: make(map[Board]float64),
-	}
-}
-
-func (mp *MapGame) get(key Board) (float64, bool) {
-	mp.mx.Lock()
-	defer mp.mx.Unlock()
-	val, ok := mp.mp[key]
-	return val, ok
-}
-
-func (mp *MapGame) insert(key Board, value float64) {
-	mp.mx.Lock()
-	defer mp.mx.Unlock()
-	mp.mp[key] = value
-}
-
-func (mp *MapGame) clear() {
-	for k := range mp.mp {
-		delete(mp.mp, k)
-	}
-}
-
-func _init() {
-	for i := 1; i <= 7; i++ {
-		POSSIBLE_TURNS[i-1] = [2]int{i, i}
-		POSSIBLE_TURNS[7+i-1] = [2]int{i, -i}
-		POSSIBLE_TURNS[14+i-1] = [2]int{-i, i}
-		POSSIBLE_TURNS[21+i-1] = [2]int{-i, -i}
-	}
-	players[BOT_PLAYER.Login] = BOT_PLAYER
-	logins[BOT_PLAYER.Login] = true
-	names[BOT_PLAYER.Username] = true
 }
 
 func redirectToIndex(w http.ResponseWriter, r *http.Request) {

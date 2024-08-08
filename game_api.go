@@ -7,39 +7,42 @@ import (
 	"strconv"
 )
 
-func getBoardHist(w http.ResponseWriter, r *http.Request) {
-	var id = r.URL.Query().Get("id")
-	turn, _ := strconv.Atoi(r.URL.Query().Get("turn"))
-	game, ok := games[id]
+func handleGetBoardHist(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	turn, isTurnConversed := strconv.Atoi(r.URL.Query().Get("turn"))
+	if isTurnConversed != nil {
+		return
+	}
+	game, ok := getGame(id)
 	if !ok || turn < 0 || turn >= len(game.Turns) {
 		return
 	}
-	board_json, _ := json.Marshal(game.Turns[turn])
-	fmt.Fprintf(w, string(board_json))
+	boardJson, _ := json.Marshal(game.Turns[turn])
+	fmt.Fprintf(w, string(boardJson))
 }
 
-func getLastMoveNumber(w http.ResponseWriter, r *http.Request) {
+func handleGetLastMoveNumber(w http.ResponseWriter, r *http.Request) {
 	var id = r.URL.Query().Get("id")
-	_, ok := games[id]
+	game, ok := getGame(id)
 	if !ok {
 		return
 	}
-	fmt.Fprintf(w, strconv.Itoa(len(games[id].Turns)-1))
+	fmt.Fprintf(w, strconv.Itoa(len(game.Turns)-1))
 }
 
-func whoseMove(w http.ResponseWriter, r *http.Request) {
+func handleWhoseMove(w http.ResponseWriter, r *http.Request) {
 	var id = r.URL.Query().Get("id")
-	_, ok := games[id]
+	game, ok := getGame(id)
 	if !ok {
 		return
 	}
-	fmt.Fprintf(w, strconv.Itoa(games[id].Board.Whose_turn))
+	fmt.Fprintf(w, strconv.Itoa(game.Board.Whose_turn))
 }
 
-func getSide(w http.ResponseWriter, r *http.Request) {
+func handleGetSide(w http.ResponseWriter, r *http.Request) {
 	var id = r.URL.Query().Get("id")
 	var login = getCookie(r, "login")
-	game, ok := games[id]
+	game, ok := getGame(id)
 	if !ok {
 		return
 	}
@@ -52,27 +55,27 @@ func getSide(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getPlayers(w http.ResponseWriter, r *http.Request) {
+func handleGetPlayersUsernames(w http.ResponseWriter, r *http.Request) {
 	var id = r.URL.Query().Get("id")
-	game, ok := games[id]
+	game, ok := getGame(id)
 	if !ok {
 		return
 	}
-	players_json, _ := json.Marshal([2]string{players[game.Players[0]].Username, players[game.Players[1]].Username})
-	fmt.Fprintf(w, string(players_json))
+	playersUsernamesJson, _ := json.Marshal([2]string{getUsername(game.Players[0]), getUsername(game.Players[1])})
+	fmt.Fprintf(w, string(playersUsernamesJson))
 }
 
-func whoWin(w http.ResponseWriter, r *http.Request) {
+func handleWhoWin(w http.ResponseWriter, r *http.Request) {
 	var id = r.URL.Query().Get("id")
-	game, ok := games[id]
+	game, ok := getGame(id)
 	if !ok {
 		return
 	}
 	fmt.Fprintf(w, strconv.Itoa(game.whoWin()))
 }
 
-func makeMove(w http.ResponseWriter, r *http.Request) {
-	if !checkUser(r) {
+func handleMakeMove(w http.ResponseWriter, r *http.Request) {
+	if !checkSession(r) {
 		redirectToIndex(w, r)
 		return
 	}
@@ -82,12 +85,12 @@ func makeMove(w http.ResponseWriter, r *http.Request) {
 	from_y, _ := strconv.Atoi(r.URL.Query().Get("from_y"))
 	to_x, _ := strconv.Atoi(r.URL.Query().Get("to_x"))
 	to_y, _ := strconv.Atoi(r.URL.Query().Get("to_y"))
-	game, ok := games[id]
+	game, ok := getGame(id)
 	if !ok || game.Players[game.Board.Whose_turn] != login {
 		return
 	}
 	if game.makeMove([2]int{from_x, from_y}, [2]int{to_x, to_y}) {
-		games[id] = game
+		setGame(id, game)
 		fmt.Fprintf(w, "1")
 		fmt.Println(from_x, from_y, to_x, to_y)
 	} else {
@@ -95,23 +98,24 @@ func makeMove(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func endMove(w http.ResponseWriter, r *http.Request) {
-	if !checkUser(r) {
+func handleEndMove(w http.ResponseWriter, r *http.Request) {
+	if !checkSession(r) {
 		redirectToIndex(w, r)
 		return
 	}
 	var id = r.URL.Query().Get("id")
 	var login = getCookie(r, "login")
-	game, ok := games[id]
+	game, ok := getGame(id)
 	if !ok || game.Players[game.Board.Whose_turn] != login || game.Board.Last_piece == [2]int{-1, -1} {
 		fmt.Fprintf(w, "0")
 		return
 	}
 	game.endMove()
 	if game.Players[game.Board.Whose_turn] == "BOT" {
-		BOT.makeMove(&game)
+		BOT.makeMove(game)
 		//game = BOT.findBestMove(game, game.Board.Whose_turn, (game.Board.Whose_turn+1)%2)
 	}
-	games[id] = game
+
+	setGame(id, game)
 	fmt.Fprintf(w, "1")
 }

@@ -215,9 +215,7 @@ func _print_board(game Board) {
 }
 
 func _bot_vs_bot() {
-	var player1 = newPlayer("", "", "")
-	var player2 = newPlayer("", "", "")
-	var game = newGame(player1, player2)
+	var game = newGame("", "")
 	var cnt = 0
 	for !game.isGameEnded() {
 		game.Board = BOT.findBestMove(game.Board, cnt, (cnt+1)%2)

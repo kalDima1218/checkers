@@ -14,35 +14,25 @@ import (
 var URL = "127.0.0.1"
 var PORT = "8080"
 
-var BOT_PLAYER = newPlayer("BOT", "BOT", "")
-
-var games = make(map[string]Game)
-
 var waiting_game = newTreap()
 var waiting_for = make(map[string]string)
 var last_seen = make(map[string]int)
 
-var players = make(map[string]Player)
-
-var logins = make(map[string]bool)
-var names = make(map[string]bool)
-
-func checkUser(r *http.Request) bool {
+func checkSession(r *http.Request) bool {
 	login, errLogin := r.Cookie("login")
 	password, errPassword := r.Cookie("password")
 	if errLogin != nil || errPassword != nil {
 		return false
 	}
-	_, okLogin := logins[login.Value]
-	if !okLogin || players[login.Value].Password != password.Value {
+	if getPassword(login.Value) != password.Value {
 		return false
 	} else {
 		return true
 	}
 }
 
-func index(w http.ResponseWriter, r *http.Request) {
-	if checkUser(r) {
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	if checkSession(r) {
 		page, _ := template.ParseFiles(path.Join("html", "index.html"))
 		page.Execute(w, "")
 	} else {
@@ -51,10 +41,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func game(w http.ResponseWriter, r *http.Request) {
-	if checkUser(r) {
+func handleGame(w http.ResponseWriter, r *http.Request) {
+	if checkSession(r) {
 		var id = r.URL.Query().Get("id")
-		_, ok := games[id]
+		ok := isGameExists(id)
 		if !ok {
 			redirectToIndex(w, r)
 		} else {
@@ -66,8 +56,8 @@ func game(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func startGame(w http.ResponseWriter, r *http.Request) {
-	if !checkUser(r) {
+func handleStartGame(w http.ResponseWriter, r *http.Request) {
+	if !checkSession(r) {
 		redirectToIndex(w, r)
 		return
 	}
@@ -78,9 +68,10 @@ func startGame(w http.ResponseWriter, r *http.Request) {
 		delete(last_seen, login)
 	}
 	if !waiting_game.empty() {
-		var partner = waiting_game.begin().i.getFieldString("player")
-		var id = strconv.Itoa(rand.Int())
-		games[id] = newGame(players[login], players[partner])
+		partner := waiting_game.begin().i.getFieldString("player")
+		id := strconv.Itoa(rand.Int())
+		game := newGame(getUsername(login), getUsername(partner))
+		insertGame(id, &game)
 		waiting_for[partner] = id
 		waiting_for[login] = id
 		redirectTo(w, r, "waiting_game")
@@ -91,8 +82,8 @@ func startGame(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getWaiting(w http.ResponseWriter, r *http.Request) {
-	if !checkUser(r) {
+func handleGetWaiting(w http.ResponseWriter, r *http.Request) {
+	if !checkSession(r) {
 		return
 	}
 	var login = getCookie(r, "login")
@@ -105,51 +96,58 @@ func getWaiting(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func startBotGame(w http.ResponseWriter, r *http.Request) {
-	if !checkUser(r) {
+func handleStartBotGame(w http.ResponseWriter, r *http.Request) {
+	if !checkSession(r) {
 		redirectToIndex(w, r)
 		return
 	}
 	var login = getCookie(r, "login")
 	var id = strconv.Itoa(rand.Int())
-	games[id] = newGame(players[login], BOT_PLAYER)
+	game := newGame(getUsername(login), "BOT")
+	insertGame(id, &game)
 	redirectTo(w, r, "game?id="+id)
 }
 
-func waitingGame(w http.ResponseWriter, r *http.Request) {
+func handleWaitingGame(w http.ResponseWriter, r *http.Request) {
 	page, _ := template.ParseFiles(path.Join("html", "waiting_game.html"))
 	page.Execute(w, "")
 }
 
-func setupRoutes() {
-	// PAGES SECTION
-	http.HandleFunc("/", index)
-	http.HandleFunc("/game", game)
-	http.HandleFunc("/reg", reg)
-	http.HandleFunc("/login", login)
-	// FUNCTION SECTION
-	http.HandleFunc("/logout", logout)
-	http.HandleFunc("/make_move", makeMove)
-	http.HandleFunc("/end_move", endMove)
-	http.HandleFunc("/whose_move", whoseMove)
-	http.HandleFunc("/get_side", getSide)
-	http.HandleFunc("/get_players", getPlayers)
-	http.HandleFunc("/who_win", whoWin)
-	http.HandleFunc("/start_game", startGame)
-	http.HandleFunc("/get_waiting", getWaiting)
-	http.HandleFunc("/start_bot_game", startBotGame)
-	http.HandleFunc("/waiting_game", waitingGame)
-	http.HandleFunc("/get_last_move_number", getLastMoveNumber)
-	http.HandleFunc("/get_board_hist", getBoardHist)
-	// FILE SECTION
+func startSite() {
+	// PAGES
+	http.HandleFunc("/", handleIndex)
+	http.HandleFunc("/game", handleGame)
+	http.HandleFunc("/registration", handleRegistration)
+	http.HandleFunc("/login", handleLogin)
+	http.HandleFunc("/waiting_game", handleWaitingGame)
+
+	// AUTH
+	http.HandleFunc("/logout", handleLogout)
+
+	// GAME API
+	http.HandleFunc("/make_move", handleMakeMove)
+	http.HandleFunc("/end_move", handleEndMove)
+	http.HandleFunc("/whose_move", handleWhoseMove)
+	http.HandleFunc("/get_side", handleGetSide)
+	http.HandleFunc("/get_players", handleGetPlayersUsernames)
+	http.HandleFunc("/who_win", handleWhoWin)
+	http.HandleFunc("/get_last_move_number", handleGetLastMoveNumber)
+	http.HandleFunc("/get_board_hist", handleGetBoardHist)
+
+	// FUNCTIONS
+	http.HandleFunc("/start_bot_game", handleStartBotGame)
+	http.HandleFunc("/start_game", handleStartGame)
+	http.HandleFunc("/get_waiting", handleGetWaiting)
+
+	// FILES
 	http.HandleFunc("/game.js", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join("js", "game.js"))
 	})
 	http.HandleFunc("/index.js", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join("js", "index.js"))
 	})
-	http.HandleFunc("/reg.js", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, path.Join("js", "reg.js"))
+	http.HandleFunc("/registration.js", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, path.Join("js", "registration.js"))
 	})
 	http.HandleFunc("/login.js", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join("js", "login.js"))
@@ -166,14 +164,9 @@ func setupRoutes() {
 	http.HandleFunc("/index.css", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join("css", "index.css"))
 	})
-	http.HandleFunc("/login_reg.css", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, path.Join("css", "login_reg.css"))
+	http.HandleFunc("/login_registration.css", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, path.Join("css", "login_registration.css"))
 	})
-}
 
-func startSite() {
-	_init_load()
-	go _autosave()
-	setupRoutes()
 	http.ListenAndServe(":"+PORT, nil)
 }

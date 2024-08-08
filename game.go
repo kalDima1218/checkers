@@ -1,5 +1,7 @@
 package main
 
+import "encoding/json"
+
 type Board struct {
 	Board      [8][8]int
 	Whose_turn int
@@ -175,19 +177,23 @@ func (game *Board) endMove() {
 }
 
 type Game struct {
-	Id      int
 	Board   Board
 	Players [2]string
 	Turns   [][8][8]int
 }
 
-func newGame(player1 Player, player2 Player) Game {
+func newGame(player1Login, player2Login string) Game {
 	var tmp Game
 	tmp.Board = newBoard(0, [2]int{-1, -1})
-	tmp.Players[0] = player1.Login
-	tmp.Players[1] = player2.Login
+	tmp.Players[0] = player1Login
+	tmp.Players[1] = player2Login
 	tmp.Turns = append(tmp.Turns, tmp.Board.Board)
 	return tmp
+}
+
+func (game *Game) getJson() string {
+	boardJson, _ := json.Marshal(game)
+	return string(boardJson)
 }
 
 func (game *Game) checkKings() {
