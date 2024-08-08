@@ -215,6 +215,7 @@ func _print_board(game Board) {
 }
 
 func _bot_vs_bot() {
+	calcPossibleTurns()
 	var game = newGame("", "")
 	var cnt = 0
 	for !game.isGameEnded() {

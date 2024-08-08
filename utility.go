@@ -126,3 +126,12 @@ func getCookie(r *http.Request, data_key string) string {
 	data, _ := r.Cookie(data_key)
 	return data.Value
 }
+
+func calcPossibleTurns() {
+	for i := 1; i <= 7; i++ {
+		POSSIBLE_TURNS[i-1] = [2]int{i, i}
+		POSSIBLE_TURNS[7+i-1] = [2]int{i, -i}
+		POSSIBLE_TURNS[14+i-1] = [2]int{-i, i}
+		POSSIBLE_TURNS[21+i-1] = [2]int{-i, -i}
+	}
+}

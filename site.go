@@ -114,6 +114,8 @@ func handleWaitingGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func startSite() {
+	calcPossibleTurns()
+	loadDB()
 	// PAGES
 	http.HandleFunc("/", handleIndex)
 	http.HandleFunc("/game", handleGame)
