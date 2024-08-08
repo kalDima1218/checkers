@@ -104,7 +104,7 @@ func (game *Board) isEating(from [2]int, to [2]int) bool {
 	var dist = _dist(from, to)
 	var dir = _div(dist, _len(from, to))
 	var cnt = 0
-	for i := _add(from, dir); _isBetwen(_add(from, dir), i, _sub(to, dir)); i = _add(i, dir) {
+	for i := _add(from, dir); _isBetween(_add(from, dir), i, _sub(to, dir)); i = _add(i, dir) {
 		if game.Board[i[0]][i[1]] != 0 && game.Board[i[0]][i[1]] != game.Whose_turn+1 && game.Board[i[0]][i[1]] != 2+game.Whose_turn+1 {
 			cnt++
 		}
@@ -157,7 +157,7 @@ func (game *Board) makeMove(from [2]int, to [2]int) bool {
 		} else {
 			game.Last_piece = [2]int{-2, -2}
 		}
-		for i := from; _isBetwen(from, i, _sub(to, dir)); i = _add(i, dir) {
+		for i := from; _isBetween(from, i, _sub(to, dir)); i = _add(i, dir) {
 			//game.Turns[len(game.Turns)-1] = append(game.Turns[len(game.Turns)-1], [3]int{i[0], i[1], 0})
 			game.Board[i[0]][i[1]] = 0
 		}

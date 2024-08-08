@@ -12,6 +12,8 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 	redirectToIndex(w, r)
 }
 
+// TODO добавить jwt
+
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		page, _ := template.ParseFiles(path.Join("html", "login.html"))

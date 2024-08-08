@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+// TODO добавить обработку ошибок в получение куки
+
 func handleGetBoardHist(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	turn, isTurnConversed := strconv.Atoi(r.URL.Query().Get("turn"))
@@ -81,18 +83,18 @@ func handleMakeMove(w http.ResponseWriter, r *http.Request) {
 	}
 	var id = r.URL.Query().Get("id")
 	var login = getCookie(r, "login")
-	from_x, _ := strconv.Atoi(r.URL.Query().Get("from_x"))
-	from_y, _ := strconv.Atoi(r.URL.Query().Get("from_y"))
-	to_x, _ := strconv.Atoi(r.URL.Query().Get("to_x"))
-	to_y, _ := strconv.Atoi(r.URL.Query().Get("to_y"))
+	fromX, _ := strconv.Atoi(r.URL.Query().Get("from_x"))
+	fromY, _ := strconv.Atoi(r.URL.Query().Get("from_y"))
+	toX, _ := strconv.Atoi(r.URL.Query().Get("to_x"))
+	toY, _ := strconv.Atoi(r.URL.Query().Get("to_y"))
 	game, ok := getGame(id)
 	if !ok || game.Players[game.Board.Whose_turn] != login {
 		return
 	}
-	if game.makeMove([2]int{from_x, from_y}, [2]int{to_x, to_y}) {
+	if game.makeMove([2]int{fromX, fromY}, [2]int{toX, toY}) {
 		setGame(id, game)
 		fmt.Fprintf(w, "1")
-		fmt.Println(from_x, from_y, to_x, to_y)
+		fmt.Println(fromX, fromY, toX, toY)
 	} else {
 		fmt.Fprintf(w, "0")
 	}

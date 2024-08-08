@@ -30,7 +30,7 @@ func _len(a [2]int, b [2]int) int {
 	return _abs(b[0] - a[0])
 }
 
-func _isBetwen(l [2]int, m [2]int, r [2]int) bool {
+func _isBetween(l [2]int, m [2]int, r [2]int) bool {
 	return _len(l, m)+_len(m, r) == _len(l, r)
 }
 
@@ -50,7 +50,7 @@ func _less_equal(a Item, b Item) bool {
 	return a.getVal(b.getSize()) <= b.getVal(a.getSize())
 }
 
-func _hash(s string) int {
+func hash(s string) int {
 	const b, m = 131, 100000000000031
 	var h = 0
 	for _, c := range s {
@@ -122,16 +122,7 @@ func resetCookie(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{Name: "password", Value: "", MaxAge: -1})
 }
 
-func getCookie(r *http.Request, data_key string) string {
-	data, _ := r.Cookie(data_key)
+func getCookie(r *http.Request, dataKey string) string {
+	data, _ := r.Cookie(dataKey)
 	return data.Value
-}
-
-func calcPossibleTurns() {
-	for i := 1; i <= 7; i++ {
-		POSSIBLE_TURNS[i-1] = [2]int{i, i}
-		POSSIBLE_TURNS[7+i-1] = [2]int{i, -i}
-		POSSIBLE_TURNS[14+i-1] = [2]int{-i, i}
-		POSSIBLE_TURNS[21+i-1] = [2]int{-i, -i}
-	}
 }
