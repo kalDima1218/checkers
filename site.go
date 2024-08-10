@@ -18,19 +18,6 @@ var waiting_game = newTreap()
 var waiting_for = make(map[string]string)
 var last_seen = make(map[string]int)
 
-func checkSession(r *http.Request) bool {
-	login, errLogin := r.Cookie("login")
-	password, errPassword := r.Cookie("password")
-	if errLogin != nil || errPassword != nil {
-		return false
-	}
-	if getPassword(login.Value) != password.Value {
-		return false
-	} else {
-		return true
-	}
-}
-
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	if checkSession(r) {
 		page, _ := template.ParseFiles(path.Join("html", "index.html"))
