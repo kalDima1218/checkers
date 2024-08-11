@@ -11,7 +11,7 @@ import (
 
 var DB *sql.DB
 
-// поставить проверку от инъекций
+// TODO поставить проверку от инъекций
 // config.json {"User": "", "Passwd": "", "Addr": "", "DBName": ""}
 func loadDB() {
 	config := make(map[string]string)

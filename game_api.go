@@ -42,18 +42,19 @@ func handleWhoseMove(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetSide(w http.ResponseWriter, r *http.Request) {
-	var id = r.URL.Query().Get("id")
-	var login = getCookie(r, "login")
+	id := r.URL.Query().Get("id")
+	login, err := getLogin(r)
+	if err != nil {
+		return
+	}
 	game, ok := getGame(id)
 	if !ok {
 		return
 	}
 	if game.Players[0] == login {
 		fmt.Fprintf(w, "0")
-		return
 	} else {
 		fmt.Fprintf(w, "1")
-		return
 	}
 }
 
@@ -81,8 +82,11 @@ func handleMakeMove(w http.ResponseWriter, r *http.Request) {
 		redirectToIndex(w, r)
 		return
 	}
-	var id = r.URL.Query().Get("id")
-	var login = getCookie(r, "login")
+	id := r.URL.Query().Get("id")
+	login, err := getLogin(r)
+	if err != nil {
+		return
+	}
 	fromX, _ := strconv.Atoi(r.URL.Query().Get("from_x"))
 	fromY, _ := strconv.Atoi(r.URL.Query().Get("from_y"))
 	toX, _ := strconv.Atoi(r.URL.Query().Get("to_x"))
@@ -94,7 +98,6 @@ func handleMakeMove(w http.ResponseWriter, r *http.Request) {
 	if game.makeMove([2]int{fromX, fromY}, [2]int{toX, toY}) {
 		setGame(id, game)
 		fmt.Fprintf(w, "1")
-		fmt.Println(fromX, fromY, toX, toY)
 	} else {
 		fmt.Fprintf(w, "0")
 	}
@@ -105,8 +108,11 @@ func handleEndMove(w http.ResponseWriter, r *http.Request) {
 		redirectToIndex(w, r)
 		return
 	}
-	var id = r.URL.Query().Get("id")
-	var login = getCookie(r, "login")
+	id := r.URL.Query().Get("id")
+	login, err := getLogin(r)
+	if err != nil {
+		return
+	}
 	game, ok := getGame(id)
 	if !ok || game.Players[game.Board.Whose_turn] != login || game.Board.Last_piece == [2]int{-1, -1} {
 		fmt.Fprintf(w, "0")

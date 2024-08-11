@@ -118,8 +118,7 @@ func redirectTo(w http.ResponseWriter, r *http.Request, page string) {
 }
 
 func resetCookie(w http.ResponseWriter) {
-	http.SetCookie(w, &http.Cookie{Name: "login", Value: "", MaxAge: -1})
-	http.SetCookie(w, &http.Cookie{Name: "password", Value: "", MaxAge: -1})
+	http.SetCookie(w, &http.Cookie{Name: "token", Value: "", MaxAge: -1})
 }
 
 func getCookie(r *http.Request, dataKey string) string {

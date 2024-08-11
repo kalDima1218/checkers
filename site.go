@@ -48,7 +48,10 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 		redirectToIndex(w, r)
 		return
 	}
-	var login = getCookie(r, "login")
+	login, err := getLogin(r)
+	if err != nil {
+		return
+	}
 	_, ok := last_seen[login]
 	if ok {
 		waiting_game.erase(newItemWaitingGame(login, last_seen[login]))
@@ -73,7 +76,10 @@ func handleGetWaiting(w http.ResponseWriter, r *http.Request) {
 	if !checkSession(r) {
 		return
 	}
-	var login = getCookie(r, "login")
+	login, err := getLogin(r)
+	if err != nil {
+		return
+	}
 	id, ok := waiting_for[login]
 	if !ok {
 		fmt.Fprintf(w, "wrong")
@@ -88,10 +94,16 @@ func handleStartBotGame(w http.ResponseWriter, r *http.Request) {
 		redirectToIndex(w, r)
 		return
 	}
-	var login = getCookie(r, "login")
-	var id = strconv.Itoa(rand.Int())
+	login, err := getLogin(r)
+	if err != nil {
+		return
+	}
+	id := strconv.Itoa(rand.Int())
 	game := newGame(getUsername(login), "BOT")
-	insertGame(id, &game)
+	err = insertGame(id, &game)
+	if err != nil {
+		return
+	}
 	redirectTo(w, r, "game?id="+id)
 }
 
