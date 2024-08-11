@@ -115,7 +115,7 @@ func handleEndMove(w http.ResponseWriter, r *http.Request) {
 	}
 	game, ok := getGame(id)
 	if !ok || game.Players[game.Board.Whose_turn] != login || game.Board.Last_piece == [2]int{-1, -1} {
-		fmt.Fprintf(w, "0")
+		//fmt.Fprintf(w, "0")
 		return
 	}
 	game.endMove()
@@ -125,5 +125,5 @@ func handleEndMove(w http.ResponseWriter, r *http.Request) {
 	}
 
 	setGame(id, game)
-	fmt.Fprintf(w, "1")
+	//fmt.Fprintf(w, "1")
 }

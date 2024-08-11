@@ -93,33 +93,21 @@ function rerender(){
 			document.getElementById("cell-" + selected[0].toString() + "-" + selected[1].toString()).classList.add("selected");
 		}
 	};
+	for(let i of document.getElementsByClassName("selected")){
+		i.classList.remove("selected");
+	}
 	let request2 = new XMLHttpRequest();
-	request2.open("GET", url+"/whose_move?id=" + id);
+	request2.open("GET", url+"/who_win?id=" + id);
 	request2.responseType = "text";
 	request2.send();
 	request2.onload = function() {
-		if(request2.response === "0"){
-			document.getElementById("turn").innerHTML = "Ходит: красный";
+		if(request2.response == "0"){
+			document.getElementById("win-red").classList.remove("hidden");
 		}
-		else{
-			document.getElementById("turn").innerHTML = "Ходит: черный";
+		else if(request2.response == "1"){
+			document.getElementById("win-black").classList.remove("hidden");
 		}
 	}
-	// for(let i of document.getElementsByClassName("selected")){
-	// 	i.classList.remove("selected");
-	// }
-	// let request3 = new XMLHttpRequest();
-	// request3.open("GET", url+"/who_win?id=" + id);
-	// request3.responseType = "text";
-	// request3.send();
-	// request3.onload = function() {
-	// 	if(request3.response == "0"){
-	// 		document.getElementById("win-red").classList.remove("hidden");
-	// 	}
-	// 	else if(request3.response == "1"){
-	// 		document.getElementById("win-black").classList.remove("hidden");
-	// 	}
-	// }
 }
 
 $(".end_turn_btn").click(function(){
@@ -172,16 +160,28 @@ function setPlayers() {
 
 function update() {
 	let id = params["id"];
-	let request = new XMLHttpRequest();
-	request.open("GET", url + "/get_last_move_number?id=" + params["id"]);
-	request.responseType = "text";
-	request.send();
-	request.onload = function () {
-		let new_last_turn = JSON.parse(request.response);
+	let request1 = new XMLHttpRequest();
+	request1.open("GET", url + "/get_last_move_number?id=" + params["id"]);
+	request1.responseType = "text";
+	request1.send();
+	request1.onload = function () {
+		let new_last_turn = JSON.parse(request1.response);
 		if(new_last_turn !== last_turn){
 			last_turn = new_last_turn;
 			current_turn = last_turn;
 			rerender();
+		}
+	}
+	let request2 = new XMLHttpRequest();
+	request2.open("GET", url+"/whose_move?id=" + id);
+	request2.responseType = "text";
+	request2.send();
+	request2.onload = function() {
+		if(request2.response === "0"){
+			document.getElementById("turn").innerHTML = "Ходит: красный";
+		}
+		else{
+			document.getElementById("turn").innerHTML = "Ходит: черный";
 		}
 	}
 }

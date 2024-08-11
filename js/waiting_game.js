@@ -1,4 +1,5 @@
 let url = "http://" + window.location.host
+
 function update(){
     let request = new XMLHttpRequest();
     request.open("POST", url+"/get_waiting");

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/golang-jwt/jwt"
 	"html/template"
 	"math/rand"
 	"net/http"
@@ -14,9 +13,12 @@ import (
 var URL = "127.0.0.1"
 var PORT = "8080"
 
-var waiting_game = newTreap()
+var waiting_game = newSet()
 var waiting_for = make(map[string]string)
 var last_seen = make(map[string]int)
+
+// TODO добавить обработку ошибок в получение куки
+// TODO протестирвать матчмейкинг
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	if checkSession(r) {
@@ -30,7 +32,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 
 func handleGame(w http.ResponseWriter, r *http.Request) {
 	if checkSession(r) {
-		var id = r.URL.Query().Get("id")
+		id := r.URL.Query().Get("id")
 		ok := isGameExists(id)
 		if !ok {
 			redirectToIndex(w, r)
@@ -59,6 +61,7 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 	}
 	if !waiting_game.empty() {
 		partner := waiting_game.begin().i.getFieldString("player")
+		waiting_game.erase(waiting_game.begin().i)
 		id := strconv.Itoa(rand.Int())
 		game := newGame(getUsername(login), getUsername(partner))
 		insertGame(id, &game)

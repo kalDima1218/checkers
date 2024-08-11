@@ -8,8 +8,8 @@ import (
 type Item interface {
 	hash() int
 	getSize() int
-	getVal(n int) string
-	getFieldString(field string) string
+	getVal(int) string
+	getFieldString(string) string
 }
 
 type Node struct {
@@ -105,15 +105,15 @@ func _print(p *Node) {
 	}
 }
 
-type Treap struct {
+type Set struct {
 	_root, _begin, _end *Node
 }
 
-func newTreap() Treap {
-	return *new(Treap)
+func newSet() Set {
+	return *new(Set)
 }
 
-func (t *Treap) _updBegin() {
+func (t *Set) _updBegin() {
 	var p = t._root
 	for p != nil && p.l != nil {
 		p = p.l
@@ -121,7 +121,7 @@ func (t *Treap) _updBegin() {
 	t._begin = p
 }
 
-func (t *Treap) _updEnd() {
+func (t *Set) _updEnd() {
 	var p = t._root
 	for p != nil && p.r != nil {
 		p = p.r
@@ -129,15 +129,15 @@ func (t *Treap) _updEnd() {
 	t._end = p
 }
 
-func (t *Treap) begin() *Node {
+func (t *Set) begin() *Node {
 	return t._begin
 }
 
-func (t *Treap) end() *Node {
+func (t *Set) end() *Node {
 	return t._end
 }
 
-func (t *Treap) count(x Item) int {
+func (t *Set) count(x Item) int {
 	var p = t._root
 	for p.i != x {
 		if p.r != nil && _less(p.i, x) {
@@ -157,7 +157,7 @@ func (t *Treap) count(x Item) int {
 	}
 }
 
-func (t *Treap) find(x Item) (*Node, bool) {
+func (t *Set) find(x Item) (*Node, bool) {
 	var p = t._root
 	for p.i != x {
 		if p.r != nil && _less(p.i, x) {
@@ -173,7 +173,7 @@ func (t *Treap) find(x Item) (*Node, bool) {
 	return p, p.i == x
 }
 
-func (t *Treap) insert(x Item) {
+func (t *Set) insert(x Item) {
 	if t._root != nil && t.count(x) != 0 {
 		return
 	}
@@ -183,7 +183,7 @@ func (t *Treap) insert(x Item) {
 	t._updEnd()
 }
 
-func (t *Treap) erase(x Item) {
+func (t *Set) erase(x Item) {
 	if t._root == nil || t.count(x) == 0 {
 		return
 	}
@@ -194,10 +194,10 @@ func (t *Treap) erase(x Item) {
 	t._updEnd()
 }
 
-func (t *Treap) empty() bool {
+func (t *Set) empty() bool {
 	return t._root == nil
 }
 
-func (t *Treap) print() {
+func (t *Set) print() {
 	_print(t._root)
 }

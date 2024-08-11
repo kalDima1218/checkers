@@ -100,8 +100,8 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		page, _ := template.ParseFiles(path.Join("html", "login.html"))
 		page.Execute(w, "")
 	} else {
-		var login = r.URL.Query().Get("login")
-		var password = r.URL.Query().Get("password")
+		login := r.URL.Query().Get("login")
+		password := r.URL.Query().Get("password")
 		if getPassword(login) != password {
 			fmt.Fprintf(w, "wrong")
 			return
