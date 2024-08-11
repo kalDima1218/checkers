@@ -7,10 +7,10 @@ function update(){
     request.send();
     request.onload = function() {
         let id = request.response;
-        if(id !== "wrong"){
+        if(id !== "wait"){
             window.location.href = url+"/game?id=" + id;
         }
     }
 }
 
-setInterval(update, 300)
+setInterval(update, 250)

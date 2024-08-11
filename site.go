@@ -15,7 +15,6 @@ var PORT = "8080"
 
 var waiting_game = newSet()
 var waiting_for = make(map[string]string)
-var last_seen = make(map[string]int)
 
 // TODO добавить обработку ошибок в получение куки
 // TODO ээээ поставить таймаут на лобби
@@ -50,18 +49,28 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 		redirectToIndex(w, r)
 		return
 	}
+
 	login, err := getLogin(r)
 	if err != nil {
 		return
 	}
-	_, ok := last_seen[login]
-	if ok {
-		waiting_game.erase(newItemWaitingGame(login, last_seen[login]))
-		delete(last_seen, login)
+
+	setLastSeen(login, time.Now().Unix())
+
+	if waiting_game.empty() {
+		waiting_game.insert(newItemWaitingGame(login, getLastSeen(login)))
+		redirectTo(w, r, "waiting_game")
+		return
 	}
-	if !waiting_game.empty() {
-		partner := waiting_game.begin().i.getFieldString("player")
+
+	partner := waiting_game.begin().i.getFieldString("player")
+	waiting_game.erase(waiting_game.begin().i)
+	for !waiting_game.empty() && (time.Now().Unix()-getLastSeen(partner) > 1 || partner == login) {
+		partner = waiting_game.begin().i.getFieldString("player")
 		waiting_game.erase(waiting_game.begin().i)
+	}
+
+	if partner != login && time.Now().Unix()-getLastSeen(partner) <= 1 {
 		id := strconv.Itoa(rand.Int())
 		game := newGame(getUsername(login), getUsername(partner))
 		insertGame(id, &game)
@@ -69,8 +78,7 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 		waiting_for[login] = id
 		redirectTo(w, r, "waiting_game")
 	} else {
-		last_seen[login] = int(time.Now().Unix())
-		waiting_game.insert(newItemWaitingGame(login, last_seen[login]))
+		waiting_game.insert(newItemWaitingGame(login, getLastSeen(login)))
 		redirectTo(w, r, "waiting_game")
 	}
 }
@@ -79,17 +87,36 @@ func handleGetWaiting(w http.ResponseWriter, r *http.Request) {
 	if !checkSession(r) {
 		return
 	}
+
 	login, err := getLogin(r)
 	if err != nil {
 		return
 	}
+
+	setLastSeen(login, time.Now().Unix())
+
 	id, ok := waiting_for[login]
 	if !ok {
-		fmt.Fprintf(w, "wrong")
+		fmt.Fprintf(w, "wait")
 	} else {
 		delete(waiting_for, login)
 		fmt.Fprintf(w, id)
 	}
+}
+
+func handleStopWaiting(w http.ResponseWriter, r *http.Request) {
+	if !checkSession(r) {
+		return
+	}
+
+	login, err := getLogin(r)
+	if err != nil {
+		return
+	}
+
+	setLastSeen(login, 0)
+
+	redirectToIndex(w, r)
 }
 
 func handleStartBotGame(w http.ResponseWriter, r *http.Request) {
@@ -97,16 +124,19 @@ func handleStartBotGame(w http.ResponseWriter, r *http.Request) {
 		redirectToIndex(w, r)
 		return
 	}
+
 	login, err := getLogin(r)
 	if err != nil {
 		return
 	}
+
 	id := strconv.Itoa(rand.Int())
 	game := newGame(getUsername(login), "BOT")
 	err = insertGame(id, &game)
 	if err != nil {
 		return
 	}
+
 	redirectTo(w, r, "game?id="+id)
 }
 
@@ -117,6 +147,7 @@ func handleWaitingGame(w http.ResponseWriter, r *http.Request) {
 
 func startSite() {
 	loadDB()
+
 	// PAGES
 	http.HandleFunc("/", handleIndex)
 	http.HandleFunc("/game", handleGame)
@@ -141,6 +172,7 @@ func startSite() {
 	http.HandleFunc("/start_bot_game", handleStartBotGame)
 	http.HandleFunc("/start_game", handleStartGame)
 	http.HandleFunc("/get_waiting", handleGetWaiting)
+	http.HandleFunc("/stop_waiting", handleStopWaiting)
 
 	// FILES
 	http.HandleFunc("/game.js", func(w http.ResponseWriter, r *http.Request) {

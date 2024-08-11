@@ -66,6 +66,28 @@ func getPassword(login string) string {
 	return password
 }
 
+func getLastSeen(login string) int64 {
+	rows, err := DB.Query(fmt.Sprintf("SELECT last_seen FROM Users WHERE login = '%v';", login))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var lastSeen int
+	rows.Next()
+	if rows.Scan(&lastSeen) != nil {
+		log.Fatal(err)
+	}
+	return int64(lastSeen)
+}
+
+func setLastSeen(login string, lastSeen int64) {
+	_, err := DB.Query(fmt.Sprintf("UPDATE Users SET last_seen = %v WHERE login = '%v';", lastSeen, login))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func isFreeLogin(login string) bool {
 	rows, err := DB.Query(fmt.Sprintf("SELECT COUNT(*) FROM Users WHERE login = '%v';", login))
 	if err != nil {

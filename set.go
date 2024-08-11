@@ -7,7 +7,6 @@ import (
 )
 
 type Item interface {
-	hash() int
 	getSize() int
 	getVal(int) string
 	getFieldString(string) string

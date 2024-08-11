@@ -75,20 +75,16 @@ func newMove(score float64, game Board) Move {
 }
 
 type ItemWaitingGame struct {
-	val    int
+	val    int64
 	player string
 }
 
-func (i ItemWaitingGame) hash() int {
-	return _abs(i.val)
-}
-
 func (i ItemWaitingGame) getSize() int {
-	return len(strconv.Itoa(i.val))
+	return len(strconv.FormatInt(i.val, 10))
 }
 
 func (i ItemWaitingGame) getVal(n int) string {
-	var val = strconv.Itoa(i.val)
+	val := strconv.FormatInt(i.val, 10)
 	for len(val) < n {
 		val = "0" + val
 	}
@@ -102,7 +98,7 @@ func (i ItemWaitingGame) getFieldString(field string) string {
 	return ""
 }
 
-func newItemWaitingGame(player string, _time int) Item {
+func newItemWaitingGame(player string, _time int64) Item {
 	var tmp ItemWaitingGame
 	tmp.val = _time
 	tmp.player = player
