@@ -38,7 +38,7 @@ func handleWhoseMove(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	fmt.Fprintf(w, strconv.Itoa(game.Board.Whose_turn))
+	fmt.Fprintf(w, strconv.Itoa(game.Board.WhoseTurn))
 }
 
 func handleGetSide(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +74,16 @@ func handleWhoWin(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	fmt.Fprintf(w, strconv.Itoa(game.whoWin()))
+	winner := strconv.Itoa(game.whoWin())
+	if winner == "-1" {
+		if len(game.Turns) < 50 {
+			fmt.Fprintf(w, winner)
+		} else {
+			fmt.Fprintf(w, "-2")
+		}
+	} else {
+		fmt.Fprintf(w, winner)
+	}
 }
 
 func handleMakeMove(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +101,7 @@ func handleMakeMove(w http.ResponseWriter, r *http.Request) {
 	toX, _ := strconv.Atoi(r.URL.Query().Get("to_x"))
 	toY, _ := strconv.Atoi(r.URL.Query().Get("to_y"))
 	game, ok := getGame(id)
-	if !ok || game.Players[game.Board.Whose_turn] != login {
+	if !ok || game.Players[game.Board.WhoseTurn] != login || len(game.Turns) >= 50 {
 		return
 	}
 	if game.makeMove([2]int{fromX, fromY}, [2]int{toX, toY}) {
@@ -114,12 +123,12 @@ func handleEndMove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	game, ok := getGame(id)
-	if !ok || game.Players[game.Board.Whose_turn] != login || game.Board.Last_piece == [2]int{-1, -1} {
+	if !ok || game.Players[game.Board.WhoseTurn] != login || game.Board.LastPiece == [2]int{-1, -1} {
 		//fmt.Fprintf(w, "0")
 		return
 	}
 	game.endMove()
-	if game.Players[game.Board.Whose_turn] == "BOT" {
+	if game.Players[game.Board.WhoseTurn] == "BOT" {
 		BOT.makeMove(game)
 		//game = BOT.findBestMove(game, game.Board.Whose_turn, (game.Board.Whose_turn+1)%2)
 	}

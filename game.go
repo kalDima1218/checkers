@@ -5,12 +5,12 @@ import "encoding/json"
 // TODO добавить ничью через 50 ходов
 
 type Board struct {
-	Board      [8][8]int
-	Whose_turn int
-	Last_piece [2]int
+	Board     [8][8]int
+	WhoseTurn int
+	LastPiece [2]int
 }
 
-func newBoard(whose_turn int, last_piece [2]int) Board {
+func newBoard(whoseTurn int, lastPiece [2]int) Board {
 	var tmp Board
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
@@ -23,8 +23,8 @@ func newBoard(whose_turn int, last_piece [2]int) Board {
 			}
 		}
 	}
-	tmp.Whose_turn = whose_turn
-	tmp.Last_piece = last_piece
+	tmp.WhoseTurn = whoseTurn
+	tmp.LastPiece = lastPiece
 	return tmp
 }
 
@@ -40,50 +40,43 @@ func (game *Board) checkKings() {
 }
 
 func (game *Board) whoWin() int {
-	var _turn = game.Whose_turn
-	var _last_piece = game.Last_piece
-	var possible_turns [28][2]int
-	for i := 1; i <= 7; i++ {
-		possible_turns[i-1] = [2]int{i, i}
-		possible_turns[7+i-1] = [2]int{i, -i}
-		possible_turns[14+i-1] = [2]int{-i, i}
-		possible_turns[21+i-1] = [2]int{-i, -i}
-	}
-	var can_move = [2]bool{false, false}
-	game.Last_piece = [2]int{-1, -1}
-	game.Whose_turn = 0
-	for i := 0; i < 8 && !can_move[0]; i++ {
-		for j := 0; j < 8 && !can_move[0]; j++ {
+	var _turn = game.WhoseTurn
+	var _lastPiece = game.LastPiece
+	var canMove = [2]bool{false, false}
+	game.LastPiece = [2]int{-1, -1}
+	game.WhoseTurn = 0
+	for i := 0; i < 8 && !canMove[0]; i++ {
+		for j := 0; j < 8 && !canMove[0]; j++ {
 			if game.Board[i][j] != 1 && game.Board[i][j] != 3 {
 				continue
 			}
-			for _, k := range possible_turns {
+			for _, k := range POSSIBLE_TURNS {
 				if game.canMove([2]int{i, j}, _add([2]int{i, j}, k)) {
-					can_move[0] = true
+					canMove[0] = true
 					break
 				}
 			}
 		}
 	}
-	game.Whose_turn = 1
-	for i := 0; i < 8 && !can_move[1]; i++ {
-		for j := 0; j < 8 && !can_move[1]; j++ {
+	game.WhoseTurn = 1
+	for i := 0; i < 8 && !canMove[1]; i++ {
+		for j := 0; j < 8 && !canMove[1]; j++ {
 			if game.Board[i][j] != 2 && game.Board[i][j] != 4 {
 				continue
 			}
-			for _, k := range possible_turns {
+			for _, k := range POSSIBLE_TURNS {
 				if game.canMove([2]int{i, j}, _add([2]int{i, j}, k)) {
-					can_move[1] = true
+					canMove[1] = true
 					break
 				}
 			}
 		}
 	}
-	game.Whose_turn = _turn
-	game.Last_piece = _last_piece
-	if !can_move[0] {
+	game.WhoseTurn = _turn
+	game.LastPiece = _lastPiece
+	if !canMove[0] {
 		return 1
-	} else if !can_move[1] {
+	} else if !canMove[1] {
 		return 0
 	} else {
 		return -1
@@ -107,7 +100,7 @@ func (game *Board) isEating(from [2]int, to [2]int) bool {
 	var dir = _div(dist, _len(from, to))
 	var cnt = 0
 	for i := _add(from, dir); _isBetween(_add(from, dir), i, _sub(to, dir)); i = _add(i, dir) {
-		if game.Board[i[0]][i[1]] != 0 && game.Board[i[0]][i[1]] != game.Whose_turn+1 && game.Board[i[0]][i[1]] != 2+game.Whose_turn+1 {
+		if game.Board[i[0]][i[1]] != 0 && game.Board[i[0]][i[1]] != game.WhoseTurn+1 && game.Board[i[0]][i[1]] != 2+game.WhoseTurn+1 {
 			cnt++
 		}
 	}
@@ -118,13 +111,13 @@ func (game *Board) canMove(from [2]int, to [2]int) bool {
 	if from[0] < 0 || from[0] > 7 || from[1] < 0 || from[1] > 7 || to[0] < 0 || to[0] > 7 || to[1] < 0 || to[1] > 7 {
 		return false
 	}
-	if (game.Board[from[0]][from[1]] != game.Whose_turn+1 && game.Board[from[0]][from[1]] != 2+(game.Whose_turn+1)) || game.Board[to[0]][to[1]] != 0 {
+	if (game.Board[from[0]][from[1]] != game.WhoseTurn+1 && game.Board[from[0]][from[1]] != 2+(game.WhoseTurn+1)) || game.Board[to[0]][to[1]] != 0 {
 		return false
 	}
-	if !game.isEating(from, to) && game.Last_piece != [2]int{-1, -1} {
+	if !game.isEating(from, to) && game.LastPiece != [2]int{-1, -1} {
 		return false
 	}
-	if game.Last_piece != from && game.Last_piece != [2]int{-1, -1} {
+	if game.LastPiece != from && game.LastPiece != [2]int{-1, -1} {
 		return false
 	}
 	var dist = _dist(from, to)
@@ -155,9 +148,9 @@ func (game *Board) makeMove(from [2]int, to [2]int) bool {
 		game.Board[to[0]][to[1]] = game.Board[from[0]][from[1]]
 		var dir = _div(_dist(from, to), _len(from, to))
 		if game.isEating(from, to) {
-			game.Last_piece = to
+			game.LastPiece = to
 		} else {
-			game.Last_piece = [2]int{-2, -2}
+			game.LastPiece = [2]int{-2, -2}
 		}
 		for i := from; _isBetween(from, i, _sub(to, dir)); i = _add(i, dir) {
 			//game.Turns[len(game.Turns)-1] = append(game.Turns[len(game.Turns)-1], [3]int{i[0], i[1], 0})
@@ -171,11 +164,11 @@ func (game *Board) makeMove(from [2]int, to [2]int) bool {
 }
 
 func (game *Board) endMove() {
-	if game.Last_piece == [2]int{-1, -1} {
+	if game.LastPiece == [2]int{-1, -1} {
 		return
 	}
-	game.Whose_turn = (game.Whose_turn + 1) % 2
-	game.Last_piece = [2]int{-1, -1}
+	game.WhoseTurn = (game.WhoseTurn + 1) % 2
+	game.LastPiece = [2]int{-1, -1}
 }
 
 type Game struct {
@@ -223,7 +216,7 @@ func (game *Game) canMove(from [2]int, to [2]int) bool {
 }
 
 func (game *Game) makeMove(from [2]int, to [2]int) bool {
-	if game.Board.Last_piece == [2]int{-1, -1} {
+	if game.Board.LastPiece == [2]int{-1, -1} {
 		game.Turns = append(game.Turns, game.Board.Board)
 	}
 	response := game.Board.makeMove(from, to)

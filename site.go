@@ -18,7 +18,7 @@ var waiting_for = make(map[string]string)
 var last_seen = make(map[string]int)
 
 // TODO добавить обработку ошибок в получение куки
-// TODO протестирвать матчмейкинг
+// TODO ээээ поставить таймаут на лобби
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	if checkSession(r) {

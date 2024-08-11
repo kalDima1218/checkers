@@ -96,18 +96,6 @@ function rerender(){
 	for(let i of document.getElementsByClassName("selected")){
 		i.classList.remove("selected");
 	}
-	let request2 = new XMLHttpRequest();
-	request2.open("GET", url+"/who_win?id=" + id);
-	request2.responseType = "text";
-	request2.send();
-	request2.onload = function() {
-		if(request2.response == "0"){
-			document.getElementById("win-red").classList.remove("hidden");
-		}
-		else if(request2.response == "1"){
-			document.getElementById("win-black").classList.remove("hidden");
-		}
-	}
 }
 
 $(".end_turn_btn").click(function(){
@@ -182,6 +170,22 @@ function update() {
 		}
 		else{
 			document.getElementById("turn").innerHTML = "Ходит: черный";
+		}
+	}
+	let request3 = new XMLHttpRequest();
+	request3.open("GET", url+"/who_win?id=" + id);
+	request3.responseType = "text";
+	request3.send();
+	request3.onload = function() {
+		if(request3.response === "0"){
+			document.getElementById("win-red").classList.remove("hidden");
+		}
+		else if(request3.response === "1"){
+			document.getElementById("win-black").classList.remove("hidden");
+		}
+		else if(request3.response === "-2"){
+			document.getElementById("draw-red").classList.remove("hidden");
+			document.getElementById("draw-black").classList.remove("hidden");
 		}
 	}
 }

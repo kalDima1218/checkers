@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 )
 
 type Item interface {
@@ -107,10 +108,11 @@ func _print(p *Node) {
 
 type Set struct {
 	_root, _begin, _end *Node
+	mx                  sync.Mutex
 }
 
-func newSet() Set {
-	return *new(Set)
+func newSet() *Set {
+	return new(Set)
 }
 
 func (t *Set) _updBegin() {
@@ -138,7 +140,9 @@ func (t *Set) end() *Node {
 }
 
 func (t *Set) count(x Item) int {
-	var p = t._root
+	t.mx.Lock()
+	defer t.mx.Unlock()
+	p := t._root
 	for p.i != x {
 		if p.r != nil && _less(p.i, x) {
 			p = p.r
@@ -158,7 +162,9 @@ func (t *Set) count(x Item) int {
 }
 
 func (t *Set) find(x Item) (*Node, bool) {
-	var p = t._root
+	t.mx.Lock()
+	defer t.mx.Unlock()
+	p := t._root
 	for p.i != x {
 		if p.r != nil && _less(p.i, x) {
 			p = p.r
@@ -174,20 +180,24 @@ func (t *Set) find(x Item) (*Node, bool) {
 }
 
 func (t *Set) insert(x Item) {
+	t.mx.Lock()
+	defer t.mx.Unlock()
 	if t._root != nil && t.count(x) != 0 {
 		return
 	}
-	var l, r = _split(t._root, x, _less_equal)
+	l, r := _split(t._root, x, _less_equal)
 	t._root = _merge(l, _merge(newNode(x), r))
 	t._updBegin()
 	t._updEnd()
 }
 
 func (t *Set) erase(x Item) {
+	t.mx.Lock()
+	defer t.mx.Unlock()
 	if t._root == nil || t.count(x) == 0 {
 		return
 	}
-	var l, r = _split(t._root, x, _less_equal)
+	l, r := _split(t._root, x, _less_equal)
 	l, _ = _split(l, x, _less)
 	t._root = _merge(l, r)
 	t._updBegin()

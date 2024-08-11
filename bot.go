@@ -68,11 +68,11 @@ func (bot *Bot) evaluate(game Board) float64 {
 func (bot *Bot) _dfsStreak(game Board, me int, enemy int) Board {
 	var maxGame = game
 	for _, k := range POSSIBLE_TURNS {
-		if game.canMove(game.Last_piece, _add(game.Last_piece, k)) {
+		if game.canMove(game.LastPiece, _add(game.LastPiece, k)) {
 			var _game = game
-			_game.makeMove(_game.Last_piece, _add(_game.Last_piece, k))
+			_game.makeMove(_game.LastPiece, _add(_game.LastPiece, k))
 			_game = bot._dfsStreak(_game, me, enemy)
-			if game.Whose_turn == 0 {
+			if game.WhoseTurn == 0 {
 				if bot.evaluate(_game) > bot.evaluate(maxGame) {
 					maxGame = _game
 				}
@@ -99,14 +99,14 @@ func (bot *Bot) _findBestMove(game Board, depth int, me int, enemy int, prev_sco
 		return bot.evaluate(game)
 	}
 	var maxScore float64
-	if game.Whose_turn == 0 {
+	if game.WhoseTurn == 0 {
 		maxScore = -1e9
 	} else {
 		maxScore = 1e9
 	}
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			if game.Board[i][j] != game.Whose_turn+1 && game.Board[i][j] != 2+game.Whose_turn+1 {
+			if game.Board[i][j] != game.WhoseTurn+1 && game.Board[i][j] != 2+game.WhoseTurn+1 {
 				continue
 			}
 			for _, k := range POSSIBLE_TURNS {
@@ -115,7 +115,7 @@ func (bot *Bot) _findBestMove(game Board, depth int, me int, enemy int, prev_sco
 					_game.makeMove([2]int{i, j}, _add([2]int{i, j}, k))
 					_game = bot._dfsStreak(_game, me, enemy)
 					_game.endMove()
-					if game.Whose_turn == 0 {
+					if game.WhoseTurn == 0 {
 						maxScore = math.Max(maxScore, bot._findBestMove(_game, depth+1, me, enemy, maxScore))
 						if maxScore < prev_score {
 							return maxScore
@@ -135,7 +135,7 @@ func (bot *Bot) _findBestMove(game Board, depth int, me int, enemy int, prev_sco
 }
 
 func (bot *Bot) gameTemp(game Board) float64 {
-	if game.Whose_turn == 0 {
+	if game.WhoseTurn == 0 {
 		return bot._findBestMove(game, 0, 0, 1, -1e9)
 	} else {
 		return bot._findBestMove(game, 0, 0, 1, 1e9)
@@ -143,7 +143,7 @@ func (bot *Bot) gameTemp(game Board) float64 {
 }
 
 func _findBestMoveGoroutine(bot *Bot, game Board, me int, enemy int, move_chanel chan Move) {
-	if game.Whose_turn == 0 {
+	if game.WhoseTurn == 0 {
 		move_chanel <- newMove(bot._findBestMove(game, 1, me, enemy, -1e9), game)
 	} else {
 		move_chanel <- newMove(bot._findBestMove(game, 1, me, enemy, 1e9), game)
@@ -153,7 +153,7 @@ func _findBestMoveGoroutine(bot *Bot, game Board, me int, enemy int, move_chanel
 func (bot *Bot) findBestMove(game Board, me int, enemy int) Board {
 	var moveChanel = make(chan Move)
 	var maxScore float64
-	if game.Whose_turn == 0 {
+	if game.WhoseTurn == 0 {
 		maxScore = -1e9
 	} else {
 		maxScore = 1e9
@@ -161,7 +161,7 @@ func (bot *Bot) findBestMove(game Board, me int, enemy int) Board {
 	var cnt = 0
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			if game.Board[i][j] != game.Whose_turn+1 && game.Board[i][j] != 2+game.Whose_turn+1 {
+			if game.Board[i][j] != game.WhoseTurn+1 && game.Board[i][j] != 2+game.WhoseTurn+1 {
 				continue
 			}
 			for _, k := range POSSIBLE_TURNS {
@@ -179,7 +179,7 @@ func (bot *Bot) findBestMove(game Board, me int, enemy int) Board {
 	var turns []Board
 	for cnt > 0 {
 		move := <-moveChanel
-		if (game.Whose_turn == 0 && move.score > maxScore) || (game.Whose_turn == 1 && move.score < maxScore) {
+		if (game.WhoseTurn == 0 && move.score > maxScore) || (game.WhoseTurn == 1 && move.score < maxScore) {
 			turns = make([]Board, 1)
 			turns[0] = move.game
 			maxScore = move.score
@@ -193,7 +193,7 @@ func (bot *Bot) findBestMove(game Board, me int, enemy int) Board {
 }
 
 func (bot *Bot) makeMove(game *Game) {
-	game.Board = bot.findBestMove(game.Board, game.Board.Whose_turn, (game.Board.Whose_turn+1)%2)
+	game.Board = bot.findBestMove(game.Board, game.Board.WhoseTurn, (game.Board.WhoseTurn+1)%2)
 	game.Turns = append(game.Turns, game.Board.Board)
 }
 

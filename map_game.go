@@ -3,8 +3,8 @@ package main
 import "sync"
 
 type MapGame struct {
-	mx sync.Mutex
 	mp map[Board]float64
+	mx sync.Mutex
 }
 
 func newMapGame() *MapGame {
