@@ -8,6 +8,7 @@ import (
 )
 
 // TODO добавить обработку ошибок в получение куки
+// TODO Ничью починить
 
 func handleGetBoardHist(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
@@ -76,7 +77,7 @@ func handleWhoWin(w http.ResponseWriter, r *http.Request) {
 	}
 	winner := strconv.Itoa(game.whoWin())
 	if winner == "-1" {
-		if len(game.Turns) < 50 {
+		if len(game.Turns) < 150 {
 			fmt.Fprintf(w, winner)
 		} else {
 			fmt.Fprintf(w, "-2")
@@ -101,7 +102,7 @@ func handleMakeMove(w http.ResponseWriter, r *http.Request) {
 	toX, _ := strconv.Atoi(r.URL.Query().Get("to_x"))
 	toY, _ := strconv.Atoi(r.URL.Query().Get("to_y"))
 	game, ok := getGame(id)
-	if !ok || game.Players[game.Board.WhoseTurn] != login || len(game.Turns) >= 50 {
+	if !ok || game.Players[game.Board.WhoseTurn] != login || len(game.Turns) >= 150 {
 		return
 	}
 	if game.makeMove([2]int{fromX, fromY}, [2]int{toX, toY}) {

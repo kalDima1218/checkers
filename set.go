@@ -77,14 +77,14 @@ func _split(p *Node, x Item, cmp func(a Item, b Item) bool) (*Node, *Node) {
 		return nil, nil
 	}
 	if cmp(p.i, x) {
-		var l, r = _split(p.r, x, cmp)
+		l, r := _split(p.r, x, cmp)
 		if l != nil {
 			l.parent = p
 		}
 		p.r = l
 		return p, r
 	} else {
-		var l, r = _split(p.l, x, cmp)
+		l, r := _split(p.l, x, cmp)
 		if r != nil {
 			r.parent = p
 		}
@@ -116,7 +116,7 @@ func newSet() *Set {
 }
 
 func (t *Set) _updBegin() {
-	var p = t._root
+	p := t._root
 	for p != nil && p.l != nil {
 		p = p.l
 	}
@@ -124,11 +124,31 @@ func (t *Set) _updBegin() {
 }
 
 func (t *Set) _updEnd() {
-	var p = t._root
+	p := t._root
 	for p != nil && p.r != nil {
 		p = p.r
 	}
 	t._end = p
+}
+
+func (t *Set) _count(x Item) int {
+	p := t._root
+	for p.i != x {
+		if p.r != nil && _less(p.i, x) {
+			p = p.r
+			continue
+		}
+		if p.l != nil && _less(x, p.i) {
+			p = p.l
+			continue
+		}
+		break
+	}
+	if p.i == x {
+		return 1
+	} else {
+		return 0
+	}
 }
 
 func (t *Set) begin() *Node {
@@ -182,7 +202,7 @@ func (t *Set) find(x Item) (*Node, bool) {
 func (t *Set) insert(x Item) {
 	t.mx.Lock()
 	defer t.mx.Unlock()
-	if t._root != nil && t.count(x) != 0 {
+	if t._root != nil && t._count(x) != 0 {
 		return
 	}
 	l, r := _split(t._root, x, _less_equal)
@@ -194,7 +214,7 @@ func (t *Set) insert(x Item) {
 func (t *Set) erase(x Item) {
 	t.mx.Lock()
 	defer t.mx.Unlock()
-	if t._root == nil || t.count(x) == 0 {
+	if t._root == nil || t._count(x) == 0 {
 		return
 	}
 	l, r := _split(t._root, x, _less_equal)

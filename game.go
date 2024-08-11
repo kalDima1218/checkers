@@ -2,8 +2,6 @@ package main
 
 import "encoding/json"
 
-// TODO добавить ничью через 50 ходов
-
 type Board struct {
 	Board     [8][8]int
 	WhoseTurn int
