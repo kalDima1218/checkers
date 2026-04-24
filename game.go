@@ -38,9 +38,9 @@ func (game *Board) checkKings() {
 }
 
 func (game *Board) whoWin() int {
-	var _turn = game.WhoseTurn
-	var _lastPiece = game.LastPiece
-	var canMove = [2]bool{false, false}
+	prevTurn := game.WhoseTurn
+	prevLastPiece := game.LastPiece
+	canMove := [2]bool{false, false}
 	game.LastPiece = [2]int{-1, -1}
 	game.WhoseTurn = 0
 	for i := 0; i < 8 && !canMove[0]; i++ {
@@ -48,7 +48,7 @@ func (game *Board) whoWin() int {
 			if game.Board[i][j] != 1 && game.Board[i][j] != 3 {
 				continue
 			}
-			for _, k := range POSSIBLE_TURNS {
+			for _, k := range possibleTurns {
 				if game.canMove([2]int{i, j}, _add([2]int{i, j}, k)) {
 					canMove[0] = true
 					break
@@ -62,7 +62,7 @@ func (game *Board) whoWin() int {
 			if game.Board[i][j] != 2 && game.Board[i][j] != 4 {
 				continue
 			}
-			for _, k := range POSSIBLE_TURNS {
+			for _, k := range possibleTurns {
 				if game.canMove([2]int{i, j}, _add([2]int{i, j}, k)) {
 					canMove[1] = true
 					break
@@ -70,15 +70,15 @@ func (game *Board) whoWin() int {
 			}
 		}
 	}
-	game.WhoseTurn = _turn
-	game.LastPiece = _lastPiece
+	game.WhoseTurn = prevTurn
+	game.LastPiece = prevLastPiece
 	if !canMove[0] {
 		return 1
-	} else if !canMove[1] {
-		return 0
-	} else {
-		return -1
 	}
+	if !canMove[1] {
+		return 0
+	}
+	return -1
 }
 
 func (game *Board) isWin(player int) bool {
@@ -86,17 +86,13 @@ func (game *Board) isWin(player int) bool {
 }
 
 func (game *Board) isGameEnded() bool {
-	if game.whoWin() != -1 {
-		return true
-	} else {
-		return false
-	}
+	return game.whoWin() != -1
 }
 
 func (game *Board) isEating(from [2]int, to [2]int) bool {
-	var dist = _dist(from, to)
-	var dir = _div(dist, _len(from, to))
-	var cnt = 0
+	dist := _dist(from, to)
+	dir := _div(dist, _len(from, to))
+	cnt := 0
 	for i := _add(from, dir); _isBetween(_add(from, dir), i, _sub(to, dir)); i = _add(i, dir) {
 		if game.Board[i[0]][i[1]] != 0 && game.Board[i[0]][i[1]] != game.WhoseTurn+1 && game.Board[i[0]][i[1]] != 2+game.WhoseTurn+1 {
 			cnt++
@@ -118,47 +114,37 @@ func (game *Board) canMove(from [2]int, to [2]int) bool {
 	if game.LastPiece != from && game.LastPiece != [2]int{-1, -1} {
 		return false
 	}
-	var dist = _dist(from, to)
+	dist := _dist(from, to)
 	if _abs(dist[0]) != _abs(dist[1]) {
 		return false
 	}
 	if game.Board[from[0]][from[1]] <= 2 {
 		if game.isEating(from, to) {
-			if _len(from, to) == 2 {
-				return true
-			} else {
-				return false
-			}
-		} else {
-			if (game.Board[from[0]][from[1]] == 1 && dist[0] == 1) || (game.Board[from[0]][from[1]] == 2 && dist[0] == -1) {
-				return true
-			} else {
-				return false
-			}
+			return _len(from, to) == 2
 		}
-	} else {
-		return true
+		return (game.Board[from[0]][from[1]] == 1 && dist[0] == 1) || (game.Board[from[0]][from[1]] == 2 && dist[0] == -1)
 	}
+	return true
 }
 
 func (game *Board) makeMove(from [2]int, to [2]int) bool {
-	if game.canMove(from, to) {
-		game.Board[to[0]][to[1]] = game.Board[from[0]][from[1]]
-		var dir = _div(_dist(from, to), _len(from, to))
-		if game.isEating(from, to) {
-			game.LastPiece = to
-		} else {
-			game.LastPiece = [2]int{-2, -2}
-		}
-		for i := from; _isBetween(from, i, _sub(to, dir)); i = _add(i, dir) {
-			//game.Turns[len(game.Turns)-1] = append(game.Turns[len(game.Turns)-1], [3]int{i[0], i[1], 0})
-			game.Board[i[0]][i[1]] = 0
-		}
-		game.checkKings()
-		return true
-	} else {
+	if !game.canMove(from, to) {
 		return false
 	}
+
+	game.Board[to[0]][to[1]] = game.Board[from[0]][from[1]]
+	dir := _div(_dist(from, to), _len(from, to))
+	if game.isEating(from, to) {
+		game.LastPiece = to
+	} else {
+		game.LastPiece = [2]int{-2, -2}
+	}
+	for i := from; _isBetween(from, i, _sub(to, dir)); i = _add(i, dir) {
+		//game.Turns[len(game.Turns)-1] = append(game.Turns[len(game.Turns)-1], [3]int{i[0], i[1], 0})
+		game.Board[i[0]][i[1]] = 0
+	}
+	game.checkKings()
+	return true
 }
 
 func (game *Board) endMove() {

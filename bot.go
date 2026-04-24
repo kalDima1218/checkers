@@ -6,9 +6,10 @@ import (
 	"math/rand"
 )
 
-var MAX_DEPTH = 6
-var POSSIBLE_TURNS = [28][2]int{{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}, {1, -1}, {2, -2}, {3, -3}, {4, -4}, {5, -5}, {6, -6}, {7, -7}, {-1, 1}, {-2, 2}, {-3, 3}, {-4, 4}, {-5, 5}, {-6, 6}, {-7, 7}, {-1, -1}, {-2, -2}, {-3, -3}, {-4, -4}, {-5, -5}, {-6, -6}, {-7, -7}}
-var BOT = newBot()
+const maxDepthDefault = 6
+
+var possibleTurns = [28][2]int{{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}, {1, -1}, {2, -2}, {3, -3}, {4, -4}, {5, -5}, {6, -6}, {7, -7}, {-1, 1}, {-2, 2}, {-3, 3}, {-4, 4}, {-5, 5}, {-6, 6}, {-7, 7}, {-1, -1}, {-2, -2}, {-3, -3}, {-4, -4}, {-5, -5}, {-6, -6}, {-7, -7}}
+var botPlayer = newBot()
 
 type Bot struct {
 	maxDepth                    int
@@ -20,7 +21,7 @@ type Bot struct {
 
 func newBot() Bot {
 	var tmp Bot
-	tmp.maxDepth = MAX_DEPTH
+	tmp.maxDepth = maxDepthDefault
 	tmp.cellCost = 10
 	tmp.kingCost = 20
 	tmp.winCost = 1000
@@ -67,7 +68,7 @@ func (bot *Bot) evaluate(game Board) float64 {
 
 func (bot *Bot) _dfsStreak(game Board, me int, enemy int) Board {
 	var maxGame = game
-	for _, k := range POSSIBLE_TURNS {
+	for _, k := range possibleTurns {
 		if game.canMove(game.LastPiece, _add(game.LastPiece, k)) {
 			var _game = game
 			_game.makeMove(_game.LastPiece, _add(_game.LastPiece, k))
@@ -109,7 +110,7 @@ func (bot *Bot) _findBestMove(game Board, depth int, me int, enemy int, prev_sco
 			if game.Board[i][j] != game.WhoseTurn+1 && game.Board[i][j] != 2+game.WhoseTurn+1 {
 				continue
 			}
-			for _, k := range POSSIBLE_TURNS {
+			for _, k := range possibleTurns {
 				if game.canMove([2]int{i, j}, _add([2]int{i, j}, k)) {
 					var _game = game
 					_game.makeMove([2]int{i, j}, _add([2]int{i, j}, k))
@@ -164,7 +165,7 @@ func (bot *Bot) findBestMove(game Board, me int, enemy int) Board {
 			if game.Board[i][j] != game.WhoseTurn+1 && game.Board[i][j] != 2+game.WhoseTurn+1 {
 				continue
 			}
-			for _, k := range POSSIBLE_TURNS {
+			for _, k := range possibleTurns {
 				if game.canMove([2]int{i, j}, _add([2]int{i, j}, k)) {
 					_game := game
 					_game.makeMove([2]int{i, j}, _add([2]int{i, j}, k))
@@ -211,8 +212,8 @@ func botVsBot() {
 	var game = newGame("", "")
 	var cnt = 0
 	for !game.isGameEnded() {
-		game.Board = BOT.findBestMove(game.Board, cnt, (cnt+1)%2)
-		fmt.Println(math.Round(BOT.gameTemp(game.Board)))
+		game.Board = botPlayer.findBestMove(game.Board, cnt, (cnt+1)%2)
+		fmt.Println(math.Round(botPlayer.gameTemp(game.Board)))
 		_printBoard(game.Board)
 		cnt++
 		cnt %= 2

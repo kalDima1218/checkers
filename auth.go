@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var SECRET_KEY = []byte("secret_key")
+var secretKey = []byte("secret_key")
 
 func generateJWT(login string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -17,7 +17,7 @@ func generateJWT(login string) string {
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	tokenString, _ := token.SignedString(SECRET_KEY)
+	tokenString, _ := token.SignedString(secretKey)
 	return tokenString
 }
 
@@ -26,7 +26,7 @@ func validateJWT(tokenString string) (string, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("invalid token")
 		}
-		return SECRET_KEY, nil
+		return secretKey, nil
 	})
 	if err != nil {
 		return "", err
@@ -63,11 +63,7 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 
 func checkSession(r *http.Request) bool {
 	_, err := getLogin(r)
-	if err == nil {
-		return true
-	} else {
-		return false
-	}
+	return err == nil
 }
 
 func handleRegistration(w http.ResponseWriter, r *http.Request) {

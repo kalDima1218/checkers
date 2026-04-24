@@ -106,11 +106,11 @@ func newItemWaitingGame(player string, _time int64) Item {
 }
 
 func redirectToIndex(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "http://"+URL+":"+PORT+"/", http.StatusSeeOther)
+	http.Redirect(w, r, "http://"+siteURL+":"+sitePort+"/", http.StatusSeeOther)
 }
 
 func redirectTo(w http.ResponseWriter, r *http.Request, page string) {
-	http.Redirect(w, r, "http://"+URL+":"+PORT+"/"+page, http.StatusSeeOther)
+	http.Redirect(w, r, "http://"+siteURL+":"+sitePort+"/"+page, http.StatusSeeOther)
 }
 
 func resetCookie(w http.ResponseWriter) {

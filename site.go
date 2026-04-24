@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-var URL = "127.0.0.1"
-var PORT = "8080"
+const siteURL = "127.0.0.1"
+const sitePort = "8080"
 
-var waiting_game = newSet()
-var waiting_for = make(map[string]string)
+var waitingGame = newSet()
+var waitingFor = make(map[string]string)
 
 // TODO добавить обработку ошибок в получение куки
 // TODO ээээ поставить таймаут на лобби
@@ -57,28 +57,28 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 
 	setLastSeen(login, time.Now().Unix())
 
-	if waiting_game.empty() {
-		waiting_game.insert(newItemWaitingGame(login, getLastSeen(login)))
+	if waitingGame.empty() {
+		waitingGame.insert(newItemWaitingGame(login, getLastSeen(login)))
 		redirectTo(w, r, "waiting_game")
 		return
 	}
 
-	partner := waiting_game.begin().i.getFieldString("player")
-	waiting_game.erase(waiting_game.begin().i)
-	for !waiting_game.empty() && (time.Now().Unix()-getLastSeen(partner) > 1 || partner == login) {
-		partner = waiting_game.begin().i.getFieldString("player")
-		waiting_game.erase(waiting_game.begin().i)
+	partner := waitingGame.begin().i.getFieldString("player")
+	waitingGame.erase(waitingGame.begin().i)
+	for !waitingGame.empty() && (time.Now().Unix()-getLastSeen(partner) > 1 || partner == login) {
+		partner = waitingGame.begin().i.getFieldString("player")
+		waitingGame.erase(waitingGame.begin().i)
 	}
 
 	if partner != login && time.Now().Unix()-getLastSeen(partner) <= 1 {
 		id := strconv.Itoa(rand.Int())
 		game := newGame(getUsername(login), getUsername(partner))
 		insertGame(id, &game)
-		waiting_for[partner] = id
-		waiting_for[login] = id
+		waitingFor[partner] = id
+		waitingFor[login] = id
 		redirectTo(w, r, "waiting_game")
 	} else {
-		waiting_game.insert(newItemWaitingGame(login, getLastSeen(login)))
+		waitingGame.insert(newItemWaitingGame(login, getLastSeen(login)))
 		redirectTo(w, r, "waiting_game")
 	}
 }
@@ -95,11 +95,11 @@ func handleGetWaiting(w http.ResponseWriter, r *http.Request) {
 
 	setLastSeen(login, time.Now().Unix())
 
-	id, ok := waiting_for[login]
+	id, ok := waitingFor[login]
 	if !ok {
 		fmt.Fprintf(w, "wait")
 	} else {
-		delete(waiting_for, login)
+		delete(waitingFor, login)
 		fmt.Fprintf(w, id)
 	}
 }
@@ -203,5 +203,5 @@ func startSite() {
 		http.ServeFile(w, r, path.Join("css", "login_registration.css"))
 	})
 
-	http.ListenAndServe(":"+PORT, nil)
+	http.ListenAndServe(":"+sitePort, nil)
 }

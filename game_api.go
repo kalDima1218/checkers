@@ -154,7 +154,7 @@ func handleEndMove(w http.ResponseWriter, r *http.Request) {
 	game.endMove()
 
 	if game.Players[game.Board.WhoseTurn] == "BOT" {
-		BOT.makeMove(game)
+		botPlayer.makeMove(game)
 		//game = BOT.findBestMove(game, game.Board.Whose_turn, (game.Board.Whose_turn+1)%2)
 	}
 
