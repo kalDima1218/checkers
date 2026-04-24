@@ -11,6 +11,17 @@ import (
 // TODO добавить обработку ошибок в получение куки
 // TODO Ничью починить
 
+func getPlayerDisplayName(login string, playerLabel string) string {
+	if login == "BOT" {
+		return login
+	}
+	if username := getUsername(login); username != "" {
+		return username
+	}
+	log.Printf("username not found for %s", playerLabel)
+	return login
+}
+
 func handleGetBoardHist(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -78,22 +89,8 @@ func handleGetPlayersUsernames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	player1 := game.Players[0]
-	if player1 != "BOT" {
-		if username := getUsername(player1); username != "" {
-			player1 = username
-		} else {
-			log.Printf("username not found for player1")
-		}
-	}
-	player2 := game.Players[1]
-	if player2 != "BOT" {
-		if username := getUsername(player2); username != "" {
-			player2 = username
-		} else {
-			log.Printf("username not found for player2")
-		}
-	}
+	player1 := getPlayerDisplayName(game.Players[0], "player1")
+	player2 := getPlayerDisplayName(game.Players[1], "player2")
 
 	playersUsernamesJson, _ := json.Marshal([2]string{player1, player2})
 	fmt.Fprintf(w, string(playersUsernamesJson))

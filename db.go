@@ -56,12 +56,12 @@ func getPassword(login string) string {
 }
 
 func getLastSeen(login string) int64 {
-	var lastSeen int
+	var lastSeen int64
 	err := DB.QueryRow("SELECT last_seen FROM Users WHERE login = ?;", login).Scan(&lastSeen)
 	if err != nil {
 		return 0
 	}
-	return int64(lastSeen)
+	return lastSeen
 }
 
 func setLastSeen(login string, lastSeen int64) {
