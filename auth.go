@@ -43,6 +43,7 @@ func setTokenCookie(w http.ResponseWriter, r *http.Request, token string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    token,
+		MaxAge:   24 * 60 * 60,
 		HttpOnly: true,
 		Secure:   r.TLS != nil,
 		SameSite: http.SameSiteLaxMode,
