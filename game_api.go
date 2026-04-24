@@ -83,7 +83,7 @@ func handleGetPlayersUsernames(w http.ResponseWriter, r *http.Request) {
 		if username := getUsername(player1); username != "" {
 			player1 = username
 		} else {
-			log.Printf("username not found for login: %s", player1)
+			log.Printf("username not found for one of players")
 		}
 	}
 	player2 := game.Players[1]
@@ -91,7 +91,7 @@ func handleGetPlayersUsernames(w http.ResponseWriter, r *http.Request) {
 		if username := getUsername(player2); username != "" {
 			player2 = username
 		} else {
-			log.Printf("username not found for login: %s", player2)
+			log.Printf("username not found for one of players")
 		}
 	}
 

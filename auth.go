@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"html/template"
@@ -24,7 +23,7 @@ func loadSecretKey() []byte {
 	if _, err := rand.Read(key); err != nil {
 		log.Fatal(err)
 	}
-	return []byte(hex.EncodeToString(key))
+	return key
 }
 
 func generateJWT(login string) (string, error) {
