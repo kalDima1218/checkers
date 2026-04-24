@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,7 @@ const sitePort = "8080"
 
 var waitingGame = newSet()
 var waitingFor = make(map[string]string)
+var waitingMu sync.Mutex
 
 // TODO добавить обработку ошибок в получение куки
 // TODO ээээ поставить таймаут на лобби
@@ -24,7 +26,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 		page, _ := template.ParseFiles(path.Join("html", "index.html"))
 		page.Execute(w, "")
 	} else {
-		resetCookie(w)
+		resetCookie(w, r)
 		redirectTo(w, r, "login")
 	}
 }
@@ -56,6 +58,8 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	setLastSeen(login, time.Now().Unix())
+	waitingMu.Lock()
+	defer waitingMu.Unlock()
 
 	if waitingGame.empty() {
 		waitingGame.insert(newItemWaitingGame(login, getLastSeen(login)))
@@ -72,7 +76,7 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 
 	if partner != login && time.Now().Unix()-getLastSeen(partner) <= 1 {
 		id := strconv.Itoa(rand.Int())
-		game := newGame(getUsername(login), getUsername(partner))
+		game := newGame(login, partner)
 		insertGame(id, &game)
 		waitingFor[partner] = id
 		waitingFor[login] = id
@@ -94,6 +98,9 @@ func handleGetWaiting(w http.ResponseWriter, r *http.Request) {
 	}
 
 	setLastSeen(login, time.Now().Unix())
+
+	waitingMu.Lock()
+	defer waitingMu.Unlock()
 
 	id, ok := waitingFor[login]
 	if !ok {
@@ -131,7 +138,7 @@ func handleStartBotGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := strconv.Itoa(rand.Int())
-	game := newGame(getUsername(login), "BOT")
+	game := newGame(login, "BOT")
 	err = insertGame(id, &game)
 	if err != nil {
 		return

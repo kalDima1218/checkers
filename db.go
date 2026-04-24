@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"log"
 	"os"
@@ -32,72 +31,47 @@ func loadDB() {
 }
 
 func insertUser(login, password, username string) error {
-	_, err := DB.Query(fmt.Sprintf("INSERT INTO Users (login, password, username, elo) VALUES ('%v','%v','%v',1500)", login, password, username))
+	_, err := DB.Exec("INSERT INTO Users (login, password, username, elo) VALUES (?, ?, ?, 1500)", login, password, username)
 	return err
 }
 
 func getUsername(login string) string {
-	rows, err := DB.Query(fmt.Sprintf("SELECT username FROM Users WHERE login = '%v';", login))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
 	var username string
-	rows.Next()
-	if rows.Scan(&username) != nil {
-		log.Fatal(err)
+	err := DB.QueryRow("SELECT username FROM Users WHERE login = ?;", login).Scan(&username)
+	if err != nil {
+		return ""
 	}
 	return username
 }
 
 func getPassword(login string) string {
-	rows, err := DB.Query(fmt.Sprintf("SELECT password FROM Users WHERE login = '%v';", login))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
 	var password string
-	rows.Next()
-	if rows.Scan(&password) != nil {
-		log.Fatal(err)
+	err := DB.QueryRow("SELECT password FROM Users WHERE login = ?;", login).Scan(&password)
+	if err != nil {
+		return ""
 	}
 	return password
 }
 
 func getLastSeen(login string) int64 {
-	rows, err := DB.Query(fmt.Sprintf("SELECT last_seen FROM Users WHERE login = '%v';", login))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
 	var lastSeen int
-	rows.Next()
-	if rows.Scan(&lastSeen) != nil {
-		log.Fatal(err)
+	err := DB.QueryRow("SELECT last_seen FROM Users WHERE login = ?;", login).Scan(&lastSeen)
+	if err != nil {
+		return 0
 	}
 	return int64(lastSeen)
 }
 
 func setLastSeen(login string, lastSeen int64) {
-	_, err := DB.Query(fmt.Sprintf("UPDATE Users SET last_seen = %v WHERE login = '%v';", lastSeen, login))
+	_, err := DB.Exec("UPDATE Users SET last_seen = ? WHERE login = ?;", lastSeen, login)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func isFreeLogin(login string) bool {
-	rows, err := DB.Query(fmt.Sprintf("SELECT COUNT(*) FROM Users WHERE login = '%v';", login))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
 	var cnt int
-	rows.Next()
-	if rows.Scan(&cnt) != nil {
+	if err := DB.QueryRow("SELECT COUNT(*) FROM Users WHERE login = ?;", login).Scan(&cnt); err != nil {
 		log.Fatal(err)
 	}
 	return cnt == 0
@@ -107,7 +81,7 @@ func insertGame(id string, game *Game) error {
 	gameJsonByte, _ := json.Marshal(game)
 	gameJson := string(gameJsonByte)
 
-	_, err := DB.Query(fmt.Sprintf("INSERT INTO Games (id, game) VALUES ('%v', '%v')", id, gameJson))
+	_, err := DB.Exec("INSERT INTO Games (id, game) VALUES (?, ?)", id, gameJson)
 	return err
 }
 
@@ -115,7 +89,7 @@ func setGame(id string, game *Game) {
 	gameJsonByte, _ := json.Marshal(game)
 	gameJson := string(gameJsonByte)
 
-	_, err := DB.Query(fmt.Sprintf("UPDATE Games SET game = '%v' WHERE id = '%v';", gameJson, id))
+	_, err := DB.Exec("UPDATE Games SET game = ? WHERE id = ?;", gameJson, id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -126,16 +100,9 @@ func getGame(id string) (*Game, bool) {
 		return nil, false
 	}
 
-	rows, err := DB.Query(fmt.Sprintf("SELECT game FROM Games WHERE id = '%v';", id))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
 	var gameJson string
-	rows.Next()
-	if rows.Scan(&gameJson) != nil {
-		log.Fatal(err)
+	if DB.QueryRow("SELECT game FROM Games WHERE id = ?;", id).Scan(&gameJson) != nil {
+		return nil, false
 	}
 
 	gameJsonByte := []byte(gameJson)
@@ -145,15 +112,8 @@ func getGame(id string) (*Game, bool) {
 }
 
 func isGameExists(id string) bool {
-	rows, err := DB.Query(fmt.Sprintf("SELECT COUNT(*) FROM Games WHERE id = '%v';", id))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
 	var cnt int
-	rows.Next()
-	if rows.Scan(&cnt) != nil {
+	if err := DB.QueryRow("SELECT COUNT(*) FROM Games WHERE id = ?;", id).Scan(&cnt); err != nil {
 		log.Fatal(err)
 	}
 	return cnt != 0

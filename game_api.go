@@ -77,7 +77,20 @@ func handleGetPlayersUsernames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	playersUsernamesJson, _ := json.Marshal([2]string{getUsername(game.Players[0]), getUsername(game.Players[1])})
+	player1 := game.Players[0]
+	if player1 != "BOT" {
+		if username := getUsername(player1); username != "" {
+			player1 = username
+		}
+	}
+	player2 := game.Players[1]
+	if player2 != "BOT" {
+		if username := getUsername(player2); username != "" {
+			player2 = username
+		}
+	}
+
+	playersUsernamesJson, _ := json.Marshal([2]string{player1, player2})
 	fmt.Fprintf(w, string(playersUsernamesJson))
 }
 
