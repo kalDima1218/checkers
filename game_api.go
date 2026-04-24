@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -81,12 +82,16 @@ func handleGetPlayersUsernames(w http.ResponseWriter, r *http.Request) {
 	if player1 != "BOT" {
 		if username := getUsername(player1); username != "" {
 			player1 = username
+		} else {
+			log.Printf("username not found for login: %s", player1)
 		}
 	}
 	player2 := game.Players[1]
 	if player2 != "BOT" {
 		if username := getUsername(player2); username != "" {
 			player2 = username
+		} else {
+			log.Printf("username not found for login: %s", player2)
 		}
 	}
 

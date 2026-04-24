@@ -101,7 +101,8 @@ func getGame(id string) (*Game, bool) {
 	}
 
 	var gameJson string
-	if DB.QueryRow("SELECT game FROM Games WHERE id = ?;", id).Scan(&gameJson) != nil {
+	if err := DB.QueryRow("SELECT game FROM Games WHERE id = ?;", id).Scan(&gameJson); err != nil {
+		log.Println(err)
 		return nil, false
 	}
 
