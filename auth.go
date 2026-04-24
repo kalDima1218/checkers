@@ -132,6 +132,10 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	} else {
 		login := r.URL.Query().Get("login")
 		password := r.URL.Query().Get("password")
+		if login == "" || password == "" {
+			fmt.Fprintf(w, "wrong")
+			return
+		}
 		if getPassword(login) != password {
 			fmt.Fprintf(w, "wrong")
 			return

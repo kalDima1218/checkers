@@ -39,6 +39,7 @@ func getUsername(login string) string {
 	var username string
 	err := DB.QueryRow("SELECT username FROM Users WHERE login = ?;", login).Scan(&username)
 	if err != nil {
+		log.Println(err)
 		return ""
 	}
 	return username
@@ -48,6 +49,7 @@ func getPassword(login string) string {
 	var password string
 	err := DB.QueryRow("SELECT password FROM Users WHERE login = ?;", login).Scan(&password)
 	if err != nil {
+		log.Println(err)
 		return ""
 	}
 	return password
