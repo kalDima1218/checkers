@@ -113,8 +113,16 @@ func redirectTo(w http.ResponseWriter, r *http.Request, page string) {
 	http.Redirect(w, r, "http://"+siteURL+":"+sitePort+"/"+page, http.StatusSeeOther)
 }
 
-func resetCookie(w http.ResponseWriter) {
-	http.SetCookie(w, &http.Cookie{Name: "token", Value: "", MaxAge: -1})
+func resetCookie(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+	})
 }
 
 func getCookie(r *http.Request, dataKey string) string {

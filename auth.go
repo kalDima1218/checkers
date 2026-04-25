@@ -1,24 +1,54 @@
 package main
 
 import (
+	"crypto/rand"
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"html/template"
+	"log"
 	"net/http"
+	"os"
 	"path"
 	"time"
 )
 
-var secretKey = []byte("secret_key")
+var secretKey = loadSecretKey()
 
-func generateJWT(login string) string {
+func loadSecretKey() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret != "" {
+		return []byte(secret)
+	}
+	key := make([]byte, 32)
+	if _, err := rand.Read(key); err != nil {
+		log.Fatal(err)
+	}
+	return key
+}
+
+func generateJWT(login string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"login": login,
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	tokenString, _ := token.SignedString(secretKey)
-	return tokenString
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
+
+func setTokenCookie(w http.ResponseWriter, r *http.Request, token string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		MaxAge:   24 * 60 * 60,
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+	})
 }
 
 func validateJWT(tokenString string) (string, error) {
@@ -57,7 +87,7 @@ func getLogin(r *http.Request) (string, error) {
 }
 
 func handleLogout(w http.ResponseWriter, r *http.Request) {
-	resetCookie(w)
+	resetCookie(w, r)
 	redirectToIndex(w, r)
 }
 
@@ -86,7 +116,12 @@ func handleRegistration(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "wrong")
 			return
 		}
-		http.SetCookie(w, &http.Cookie{Name: "token", Value: generateJWT(login)})
+		token, err := generateJWT(login)
+		if err != nil {
+			fmt.Fprintf(w, "wrong")
+			return
+		}
+		setTokenCookie(w, r, token)
 		fmt.Fprintf(w, "ok")
 	}
 }
@@ -98,11 +133,20 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	} else {
 		login := r.URL.Query().Get("login")
 		password := r.URL.Query().Get("password")
+		if login == "" || password == "" {
+			fmt.Fprintf(w, "wrong")
+			return
+		}
 		if getPassword(login) != password {
 			fmt.Fprintf(w, "wrong")
 			return
 		}
-		http.SetCookie(w, &http.Cookie{Name: "token", Value: generateJWT(login)})
+		token, err := generateJWT(login)
+		if err != nil {
+			fmt.Fprintf(w, "wrong")
+			return
+		}
+		setTokenCookie(w, r, token)
 		fmt.Fprint(w, "ok")
 	}
 }

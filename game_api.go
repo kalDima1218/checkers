@@ -3,12 +3,24 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 // TODO добавить обработку ошибок в получение куки
 // TODO Ничью починить
+
+func getPlayerDisplayName(login string, playerLabel string) string {
+	if login == "BOT" {
+		return login
+	}
+	if username := getUsername(login); username != "" {
+		return username
+	}
+	log.Printf("username not found for %s", playerLabel)
+	return login
+}
 
 func handleGetBoardHist(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
@@ -77,7 +89,10 @@ func handleGetPlayersUsernames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	playersUsernamesJson, _ := json.Marshal([2]string{getUsername(game.Players[0]), getUsername(game.Players[1])})
+	player1 := getPlayerDisplayName(game.Players[0], "player1")
+	player2 := getPlayerDisplayName(game.Players[1], "player2")
+
+	playersUsernamesJson, _ := json.Marshal([2]string{player1, player2})
 	fmt.Fprintf(w, string(playersUsernamesJson))
 }
 

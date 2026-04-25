@@ -108,6 +108,9 @@ func (game *Board) canMove(from [2]int, to [2]int) bool {
 	if (game.Board[from[0]][from[1]] != game.WhoseTurn+1 && game.Board[from[0]][from[1]] != 2+(game.WhoseTurn+1)) || game.Board[to[0]][to[1]] != 0 {
 		return false
 	}
+	if from == to {
+		return false
+	}
 	if !game.isEating(from, to) && game.LastPiece != [2]int{-1, -1} {
 		return false
 	}
